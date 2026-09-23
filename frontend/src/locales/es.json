@@ -1,0 +1,183 @@
+{
+  "translation": {
+    "app": {
+      "name": "EduSense",
+      "tagline": "Sistema académico psicopedagógico",
+      "dark_mode": "Modo oscuro",
+      "light_mode": "Modo claro",
+      "language": "Idioma"
+    },
+    "menu": {
+      "dashboard": "Panel",
+      "students": "Estudiantes",
+      "surveys": "Encuestas",
+      "schedule": "Cronograma"
+    },
+    "sidebar": {
+      "open": "Abrir menú",
+      "close": "Cerrar menú",
+      "role": "Rol"
+    },
+    "placeholder": {
+      "title": "En construcción",
+      "subtitle": "Módulos de gestión del sistema académico",
+      "message": "La sección {{name}} aún está en desarrollo. Vuelve pronto."
+    },
+    "dashboard": {
+      "title": "Panel de seguimiento",
+      "subtitle": "Resumen en tiempo real de evaluaciones e intervenciones",
+      "total_surveys": "Estudiantes Evaluados",
+      "active_alerts": "Alertas Detectadas",
+      "upcoming_activities": "Sesiones Programadas Hoy",
+      "table": {
+        "name": "Nombre",
+        "grade": "Grado / Documento",
+        "alert": "Alerta Detectada",
+        "progress": "Puntaje",
+        "actions": "Acciones",
+        "empty": "Aún no hay estudiantes registrados"
+      },
+      "view_file": "Ver Ficha",
+      "no_alert": "Sin alertas",
+      "demo": "Procesar evaluación de ejemplo",
+      "demo_subject": "Estudiante de ejemplo",
+      "processing": "Procesando...",
+      "notifications": "Notificaciones",
+      "new_alert_title": "Nueva alerta detectada",
+      "new_alert_message": "{{name}} presenta un puntaje alto en {{area}}",
+      "eval_alert_title": "Alerta superada",
+      "eval_alert_message": "La evaluación de ejemplo superó el umbral: {{score}}% (umbral {{threshold}}%).",
+      "eval_ok_title": "Evaluación procesada",
+      "eval_ok_message": "Evaluación de {{name}} procesada. Puntaje {{score}}%.",
+      "ficha_toast": "Ficha del estudiante {{name}}",
+      "loading": "Cargando...",
+      "load_error": "No se pudo cargar el panel. Verifica que el servidor API esté activo."
+    },
+    "notification": {
+      "connected": "Conectado al servidor en tiempo real",
+      "disconnected": "Sin conexión al servidor en tiempo real"
+    },
+    "login": {
+      "welcome": "Bienvenido de nuevo",
+      "subtitle": "Ingresa con tu cuenta para continuar a EduSense",
+      "branding_lead": "Sistema académico psicopedagógico",
+      "email": "Correo electrónico",
+      "email_placeholder": "admin@edusense.local",
+      "password": "Contraseña",
+      "password_placeholder": "Ingresa tu contraseña",
+      "password_show": "Mostrar contraseña",
+      "password_hide": "Ocultar contraseña",
+      "submit": "Iniciar sesión",
+      "submitting": "Ingresando...",
+      "error_invalid": "Correo o contraseña incorrectos.",
+      "error_throttled": "Demasiados intentos. Espera un minuto e intenta de nuevo.",
+      "error_inactive": "La cuenta está desactivada. Contacta al administrador.",
+      "error_generic": "No se pudo iniciar sesión. Verifica el servidor.",
+      "feature1": "Evaluaciones por área con alertas tempranas",
+      "feature2": "Planes de adaptación curricular e intervenciones",
+      "feature3": "Gestión académica: cursos, notas y asistencia",
+      "demo_toggle": "Ver credenciales de demostración",
+      "demo_hide": "Ocultar credenciales",
+      "demo_use": "Toca una cuenta para usarla en el formulario",
+      "role_admin": "Administrador",
+      "role_teacher": "Docente",
+      "role_psychopedagogist": "Psicopedagoga",
+      "role_evaluator": "Docente evaluador"
+    },
+    "home": {
+      "logout": "Cerrar sesión",
+      "user_label": "Sesión"
+    },
+    "students": {
+      "title": "Estudiantes",
+      "subtitle": "Registro maestro, carga masiva y descarga del listado",
+      "search_placeholder": "Buscar por nombre o documento",
+      "filter_status": "Estado",
+      "status_all": "Todos los estados",
+      "status_active": "Activo",
+      "status_inactive": "Inactivo",
+      "filter_grade": "Grado",
+      "grade_all": "Todos los grados",
+      "new": "Nuevo estudiante",
+      "upload": "Subir CSV",
+      "download_csv": "Descargar CSV",
+      "download_xlsx": "Descargar Excel",
+      "table": {
+        "document": "Documento",
+        "full_name": "Nombre completo",
+        "grade": "Grado",
+        "birth_date": "Nacimiento",
+        "status": "Estado",
+        "actions": "Acciones",
+        "empty": "No hay estudiantes que coincidan con los filtros"
+      },
+      "pagination": {
+        "page": "Página {{actual}} de {{total}}",
+        "previous": "Anterior",
+        "next": "Siguiente"
+      },
+      "actions": {
+        "edit": "Editar estudiante",
+        "deactivate": "Desactivar estudiante",
+        "reactivate": "Reactivar estudiante"
+      },
+      "form": {
+        "create_title": "Nuevo estudiante",
+        "edit_title": "Editar estudiante",
+        "first_name": "Nombres",
+        "last_name": "Apellidos",
+        "document_number": "Número de documento",
+        "document_hint": "Verificación de identidad de 7 a 10 dígitos.",
+        "birth_date": "Fecha de nacimiento",
+        "is_active": "Estudiante activo",
+        "save": "Guardar",
+        "saving": "Guardando..."
+      },
+      "confirm": {
+        "deactivate_title": "Desactivar estudiante",
+        "deactivate_message": "¿Desactivar a {{name}}? Podrás reactivarlo más adelante.",
+        "reactivate_title": "Reactivar estudiante",
+        "reactivate_message": "¿Reactivar a {{name}} y devolverle sus accesos?",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar",
+        "executing": "Procesando..."
+      },
+      "import": {
+        "title": "Carga masiva de estudiantes",
+        "hint": "Sube un archivo CSV con las columnas document_number, first_name, last_name y birth_date. Los documentos existentes se actualizan.",
+        "choose": "Elegir archivo CSV",
+        "file": "Archivo",
+        "separator": "Separador",
+        "separator_comma": "Coma (,)",
+        "separator_semicolon": "Punto y coma (;)",
+        "enroll": "Matricular los estudiantes importados a un curso y período",
+        "course": "Curso",
+        "term": "Período",
+        "course_placeholder": "Selecciona un curso",
+        "term_placeholder": "Selecciona un período",
+        "upload": "Subir archivo",
+        "uploading": "Subiendo...",
+        "download_template": "Descargar plantilla",
+        "created": "{{count}} creados",
+        "updated": "{{count}} actualizados",
+        "failed": "{{count}} con errores",
+        "errors_title": "Errores por fila",
+        "another": "Subir otro archivo",
+        "close": "Cerrar",
+        "file_required": "Selecciona un archivo CSV para continuar.",
+        "enroll_incomplete": "Si vas a matricular, elige el curso y el período.",
+        "error_validation": "Revisa el archivo: el formato no es válido.",
+        "error_generic": "No se pudo procesar la importación. Intenta de nuevo."
+      },
+      "messages": {
+        "created": "Estudiante creado correctamente.",
+        "updated": "Estudiante actualizado correctamente.",
+        "deactivated": "Estudiante desactivado.",
+        "reactivated": "Estudiante reactivado.",
+        "export_error": "No se pudo generar la descarga. Intenta de nuevo.",
+        "load_error": "No se pudieron cargar los estudiantes. Verifica el servidor.",
+        "error_generic": "Ocurrió un error. Intenta de nuevo."
+      }
+    }
+  }
+}

@@ -1,0 +1,99 @@
+# Orquestación completa de EduSense con Podman/Docker Compose.
+#
+# Servicios:
+#   db       -> PostgreSQL 17 (volumen persistente)
+#   backend  -> Laravel 13 + Reverb (API en :8000, WS en :8080)
+#   frontend -> React + Vite (dev server en :5173)
+#
+# Autor: Fanny Mayorga | Fecha: 16-09-2026
+
+name: edusense
+
+services:
+  db:
+    image: docker.io/library/postgres:17
+    container_name: edusense-db
+    environment:
+      POSTGRES_DB: edusense
+      POSTGRES_USER: edusense
+      POSTGRES_PASSWORD: edusense_secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - edusense_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edusense -d edusense"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build: ./backend
+    container_name: edusense-backend
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: base64:m1cQ9DYW6/Tx9wQny5oRUWpS9Or9ZkqaakVhNqV79wE=
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_DATABASE: edusense
+      DB_USERNAME: edusense
+      DB_PASSWORD: edusense_secret
+      QUEUE_CONNECTION: sync
+      BROADCAST_CONNECTION: reverb
+      REVERB_APP_ID: "630842"
+      REVERB_APP_KEY: o1ncumeo4smacba838bf
+      REVERB_APP_SECRET: y3gi1genfaxe5cv0h5bq
+      REVERB_HOST: reverb
+      REVERB_PORT: "8080"
+      REVERB_SCHEME: http
+      SEED_DATA: "true"
+      SANCTUM_STATEFUL_DOMAINS: localhost,localhost:5173,127.0.0.1,127.0.0.1:8000,backend:8000,::1
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  reverb:
+    build: ./backend
+    container_name: edusense-reverb
+    command: ["php", "artisan", "reverb:start"]
+    environment:
+      APP_ENV: local
+      BROADCAST_CONNECTION: reverb
+      REVERB_APP_ID: "630842"
+      REVERB_APP_KEY: o1ncumeo4smacba838bf
+      REVERB_APP_SECRET: y3gi1genfaxe5cv0h5bq
+      REVERB_HOST: 0.0.0.0
+      REVERB_PORT: "8080"
+      REVERB_SCHEME: http
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: edusense-frontend
+    environment:
+      VITE_REVERB_APP_KEY: o1ncumeo4smacba838bf
+      VITE_REVERB_HOST: localhost
+      VITE_REVERB_PORT: "8080"
+      VITE_REVERB_SCHEME: http
+      VITE_API_PROXY_TARGET: http://backend:8000
+    volumes:
+      # Dev con HMR: el contenedor ve el código del host; node_modules queda
+      # como volumen anónimo para no mezclar binarios de Windows/Linux.
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  edusense_pgdata:

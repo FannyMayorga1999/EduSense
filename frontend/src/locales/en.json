@@ -1,0 +1,183 @@
+{
+  "translation": {
+    "app": {
+      "name": "EduSense",
+      "tagline": "Academic psycho-pedagogical system",
+      "dark_mode": "Dark mode",
+      "light_mode": "Light mode",
+      "language": "Language"
+    },
+    "menu": {
+      "dashboard": "Dashboard",
+      "students": "Students",
+      "surveys": "Surveys",
+      "schedule": "Schedule"
+    },
+    "sidebar": {
+      "open": "Open menu",
+      "close": "Close menu",
+      "role": "Role"
+    },
+    "placeholder": {
+      "title": "Under construction",
+      "subtitle": "Academic system management modules",
+      "message": "The {{name}} section is still under development. Check back soon."
+    },
+    "dashboard": {
+      "title": "Monitoring dashboard",
+      "subtitle": "Real-time summary of evaluations and interventions",
+      "total_surveys": "Evaluated Students",
+      "active_alerts": "Active Alerts",
+      "upcoming_activities": "Sessions Scheduled Today",
+      "table": {
+        "name": "Name",
+        "grade": "Grade / Document",
+        "alert": "Detected Alert",
+        "progress": "Score",
+        "actions": "Actions",
+        "empty": "There are no registered students yet"
+      },
+      "view_file": "View File",
+      "no_alert": "No alerts",
+      "demo": "Process sample evaluation",
+      "demo_subject": "Sample student",
+      "processing": "Processing...",
+      "notifications": "Notifications",
+      "new_alert_title": "New alert detected",
+      "new_alert_message": "{{name}} shows a high score in {{area}}",
+      "eval_alert_title": "Alert threshold exceeded",
+      "eval_alert_message": "The sample evaluation exceeded the threshold: {{score}}% (threshold {{threshold}}%).",
+      "eval_ok_title": "Evaluation processed",
+      "eval_ok_message": "Evaluation of {{name}} processed. Score {{score}}%.",
+      "ficha_toast": "Student record of {{name}}",
+      "loading": "Loading...",
+      "load_error": "Could not load the dashboard. Please check that the API server is running."
+    },
+    "notification": {
+      "connected": "Connected to the real-time server",
+      "disconnected": "Disconnected from the real-time server"
+    },
+    "login": {
+      "welcome": "Welcome back",
+      "subtitle": "Sign in with your account to continue to EduSense",
+      "branding_lead": "Academic psycho-pedagogical system",
+      "email": "Email",
+      "email_placeholder": "admin@edusense.local",
+      "password": "Password",
+      "password_placeholder": "Enter your password",
+      "password_show": "Show password",
+      "password_hide": "Hide password",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "error_invalid": "Invalid email or password.",
+      "error_throttled": "Too many attempts. Wait a minute and try again.",
+      "error_inactive": "This account is deactivated. Contact the administrator.",
+      "error_generic": "Could not sign in. Please check the server.",
+      "feature1": "Per-area evaluations with early alerts",
+      "feature2": "Curricular adaptation plans and interventions",
+      "feature3": "Academic management: courses, grades and attendance",
+      "demo_toggle": "Show demo credentials",
+      "demo_hide": "Hide credentials",
+      "demo_use": "Tap an account to use it in the form",
+      "role_admin": "Administrator",
+      "role_teacher": "Teacher",
+      "role_psychopedagogist": "Psychopedagogist",
+      "role_evaluator": "Teacher evaluator"
+    },
+    "home": {
+      "logout": "Sign out",
+      "user_label": "Session"
+    },
+    "students": {
+      "title": "Students",
+      "subtitle": "Master registry, bulk upload and list export",
+      "search_placeholder": "Search by name or document",
+      "filter_status": "Status",
+      "status_all": "All statuses",
+      "status_active": "Active",
+      "status_inactive": "Inactive",
+      "filter_grade": "Grade",
+      "grade_all": "All grades",
+      "new": "New student",
+      "upload": "Upload CSV",
+      "download_csv": "Download CSV",
+      "download_xlsx": "Download Excel",
+      "table": {
+        "document": "Document",
+        "full_name": "Full name",
+        "grade": "Grade",
+        "birth_date": "Birth date",
+        "status": "Status",
+        "actions": "Actions",
+        "empty": "No students match the filters"
+      },
+      "pagination": {
+        "page": "Page {{actual}} of {{total}}",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "actions": {
+        "edit": "Edit student",
+        "deactivate": "Deactivate student",
+        "reactivate": "Reactivate student"
+      },
+      "form": {
+        "create_title": "New student",
+        "edit_title": "Edit student",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "document_number": "Document number",
+        "document_hint": "7 to 10 digit identity verification.",
+        "birth_date": "Birth date",
+        "is_active": "Active student",
+        "save": "Save",
+        "saving": "Saving..."
+      },
+      "confirm": {
+        "deactivate_title": "Deactivate student",
+        "deactivate_message": "Deactivate {{name}}? You can reactivate them later.",
+        "reactivate_title": "Reactivate student",
+        "reactivate_message": "Reactivate {{name}} and restore their access?",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "executing": "Processing..."
+      },
+      "import": {
+        "title": "Bulk student upload",
+        "hint": "Upload a CSV with the columns document_number, first_name, last_name and birth_date. Existing documents are updated.",
+        "choose": "Choose CSV file",
+        "file": "File",
+        "separator": "Separator",
+        "separator_comma": "Comma (,)",
+        "separator_semicolon": "Semicolon (;)",
+        "enroll": "Enroll imported students into a course and term",
+        "course": "Course",
+        "term": "Term",
+        "course_placeholder": "Select a course",
+        "term_placeholder": "Select a term",
+        "upload": "Upload file",
+        "uploading": "Uploading...",
+        "download_template": "Download template",
+        "created": "{{count}} created",
+        "updated": "{{count}} updated",
+        "failed": "{{count}} failed",
+        "errors_title": "Row errors",
+        "another": "Upload another file",
+        "close": "Close",
+        "file_required": "Select a CSV file to continue.",
+        "enroll_incomplete": "If enrolling, choose the course and the term.",
+        "error_validation": "Check the file: the format is not valid.",
+        "error_generic": "The import could not be processed. Try again."
+      },
+      "messages": {
+        "created": "Student created successfully.",
+        "updated": "Student updated successfully.",
+        "deactivated": "Student deactivated.",
+        "reactivated": "Student reactivated.",
+        "export_error": "The download could not be generated. Try again.",
+        "load_error": "Students could not be loaded. Check the server.",
+        "error_generic": "Something went wrong. Try again."
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+# Entornos y secretos — no subir nunca
+.env
+.env.*
+!.env.example
+!.env.docker
+*.local
+
+# Registros y cachés
+*.log
+*.cache
+.phpunit.result.cache
+.phpunit.cache/
+
+# IDE / editores
+.idea/
+.vscode/
+*.code-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Compose / superposición local
+docker-compose.override.yml
+compose.override.yml
+
+# Artefactos de build (los subtrees ya cuentan con sus propios .gitignore)
+backend/vendor/
+backend/storage/*.key
+frontend/node_modules/
+frontend/dist/
+
+# Archivos temporales del sistema
+*.tmp
+*.swp
+*~
