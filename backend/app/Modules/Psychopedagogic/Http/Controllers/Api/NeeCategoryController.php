@@ -21,11 +21,13 @@ class NeeCategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $categories = NeeCategory::query()
-            ->withCount('diagnostics')
-            ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
-            ->orderBy('name')
-            ->paginate($request->integer('per_page', 15));
+        $categories = $this->paginateQuery(
+            $request,
+            NeeCategory::query()
+                ->withCount('diagnostics')
+                ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
+                ->orderBy('name')
+        );
 
         return $this->success($categories);
     }

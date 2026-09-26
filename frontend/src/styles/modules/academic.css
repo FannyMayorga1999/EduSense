@@ -1,0 +1,18 @@
+@layer components {
+  /* ============================================================
+   * Academic module: academic terms catalog (root .mod-academic)
+   * @author Fanny Mayorga | @date 26-09-2026
+   * ============================================================ */
+
+  .mod-academic .ed-table__resalto {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mod-academic .ed-toolbar__info {
+    font-weight: 600;
+  }
+
+  .mod-academic .ed-badge--emerald {
+    box-shadow: inset 0 0 0 1px rgba(5, 150, 105, 0.25);
+  }
+}

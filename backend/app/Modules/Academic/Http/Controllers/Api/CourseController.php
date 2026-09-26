@@ -22,14 +22,16 @@ class CourseController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $courses = Course::query()
-            ->withCount('subjects')
-            ->when($request->string('search')->toString(), fn ($query, $search) => $query
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('code', 'like', "%{$search}%"))
-            ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
-            ->orderBy('name')
-            ->paginate($request->integer('per_page', 15));
+        $courses = $this->paginateQuery(
+            $request,
+            Course::query()
+                ->withCount('subjects')
+                ->when($request->string('search')->toString(), fn ($query, $search) => $query
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%"))
+                ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
+                ->orderBy('name')
+        );
 
         return $this->success($courses);
     }

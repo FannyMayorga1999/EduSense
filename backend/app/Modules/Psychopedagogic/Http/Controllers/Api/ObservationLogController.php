@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * CRUD of the observation history entries (bitácora).
+ * CRUD of the observation history entries.
  */
 class ObservationLogController extends Controller
 {
@@ -21,12 +21,15 @@ class ObservationLogController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $logs = ObservationLog::query()
-            ->with(['student:id,first_name,last_name', 'observer:id,name'])
-            ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
-            ->when($request->filled('from'), fn ($query) => $query->whereDate('observed_at', '>=', $request->string('from')->toString()))
-            ->orderByDesc('observed_at')
-            ->paginate($request->integer('per_page', 25));
+        $logs = $this->paginateQuery(
+            $request,
+            ObservationLog::query()
+                ->with(['student:id,first_name,last_name', 'observer:id,name'])
+                ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
+                ->when($request->filled('from'), fn ($query) => $query->whereDate('observed_at', '>=', $request->string('from')->toString()))
+                ->orderByDesc('observed_at'),
+            25
+        );
 
         return $this->success($logs);
     }

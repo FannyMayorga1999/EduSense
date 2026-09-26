@@ -1,0 +1,73 @@
+@layer components {
+  /* ============================================================
+   * Students module: 4-step wizard, bulk import and list
+   * customizations (root .mod-students).
+   * @author Fanny Mayorga | @date 26-09-2026
+   * ============================================================ */
+
+  /* ---------- WIZARD STEPPER ---------- */
+  .ed-stepper {
+    @apply flex items-center gap-2;
+  }
+
+  .ed-stepper__paso {
+    @apply flex flex-1 items-center gap-2;
+  }
+
+  .ed-stepper__cabeza {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition;
+  }
+
+  .ed-stepper__cabeza--hecho {
+    @apply cursor-pointer bg-emerald-500 text-white hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500;
+  }
+
+  .ed-stepper__cabeza--activo {
+    @apply bg-primary-600 text-white;
+  }
+
+  .ed-stepper__cabeza--pendiente {
+    @apply bg-stone-200 text-stone-500 dark:bg-stone-700 dark:text-stone-400;
+  }
+
+  .ed-stepper__etiqueta {
+    @apply hidden truncate text-xs font-semibold sm:block;
+  }
+
+  .ed-stepper__etiqueta--activo {
+    @apply text-primary-700 dark:text-primary-300;
+  }
+
+  .ed-stepper__etiqueta--pendiente {
+    @apply text-stone-500 dark:text-stone-400;
+  }
+
+  .ed-stepper__barra {
+    @apply mx-1 h-px flex-1 bg-stone-200 dark:bg-stone-700;
+  }
+
+  .ed-wizard__paso {
+    @apply space-y-4;
+  }
+
+  .ed-resultado__badges {
+    @apply flex flex-wrap gap-2;
+  }
+
+  .mod-students .ed-acciones--simple {
+    flex-wrap: wrap;
+  }
+
+  /* ---------- STUDENTS LIST CUSTOMIZATIONS ---------- */
+  .mod-students .ed-table__resalto {
+    font-feature-settings: 'tnum';
+  }
+
+  .mod-students .ed-dropzone__icono {
+    @apply h-5 w-5;
+  }
+
+  .mod-students .ed-badge {
+    letter-spacing: 0.02em;
+  }
+}

@@ -1,3 +1,8 @@
+@import './styles/global.css';
+@import './styles/modules/shell.css';
+@import './styles/modules/students.css';
+@import './styles/modules/academic.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

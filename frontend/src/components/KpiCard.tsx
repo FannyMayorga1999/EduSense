@@ -2,32 +2,32 @@ import type { LucideIcon } from 'lucide-react'
 import Card from './ui/Card'
 
 /**
- * Tarjeta KPI reutilizable para el dashboard.
+ * Reusable KPI card for the dashboard.
  *
  * @author Fanny Mayorga
  * @date   16-09-2026
  */
 interface KpiCardProps {
-  titulo: string
-  valor: number
-  icono: LucideIcon
-  acento: string
-  cargando?: boolean
+  title: string
+  value: number
+  icon: LucideIcon
+  accent: string
+  loading?: boolean
 }
 
-export default function KpiCard({ titulo, valor, icono: Icono, acento, cargando = false }: KpiCardProps) {
+export default function KpiCard({ title, value, icon: Icon, accent, loading = false }: KpiCardProps) {
   return (
-    <Card className="p-5 shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-center gap-4">
-        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${acento}`}>
-          <Icono className="h-6 w-6 text-white" />
+    <Card className="ed-kpi">
+      <div className="ed-kpi__fila">
+        <div className={`ed-kpi__icono ${accent}`}>
+          <Icon className="h-6 w-6" />
         </div>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-stone-500 dark:text-stone-400">{titulo}</p>
-          {cargando ? (
-            <div className="mt-1 h-7 w-12 animate-pulse rounded-md bg-stone-200 dark:bg-stone-700" />
+        <div className="ed-kpi__texto">
+          <p className="ed-kpi__titulo">{title}</p>
+          {loading ? (
+            <div className="ed-kpi__valor-skeleton" />
           ) : (
-            <p className="text-2xl font-bold text-stone-900 dark:text-white">{valor}</p>
+            <p className="ed-kpi__valor">{value}</p>
           )}
         </div>
       </div>

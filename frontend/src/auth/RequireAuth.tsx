@@ -4,13 +4,14 @@ import { useAuth } from './AuthContext'
 import Spinner from '../components/ui/Spinner'
 
 /**
- * Guard de rutas: muestra un indicador mientras se restaura la sesión y
- * redirige al login cuando el usuario no está autenticado.
+ * Route guard: shows a spinner while the session is restored and redirects
+ * to the login page when the user is not authenticated.
  *
  * @author Fanny Mayorga
+ * @date   26-09-2026
  */
 
-function PantallaCarga() {
+function LoadingScreen() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-stone-50 dark:bg-stone-950">
       <Spinner className="h-8 w-8" />
@@ -19,15 +20,15 @@ function PantallaCarga() {
 }
 
 export default function RequireAuth({ children }: { children: ReactNode }) {
-  const { usuario, cargando } = useAuth()
-  const ubicacion = useLocation()
+  const { user, loading } = useAuth()
+  const location = useLocation()
 
-  if (cargando) {
-    return <PantallaCarga />
+  if (loading) {
+    return <LoadingScreen />
   }
 
-  if (usuario === null) {
-    return <Navigate to="/login" replace state={{ desde: ubicacion.pathname }} />
+  if (user === null) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />
   }
 
   return <>{children}</>

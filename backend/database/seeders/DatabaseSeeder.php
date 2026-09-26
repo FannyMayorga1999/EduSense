@@ -168,11 +168,25 @@ class DatabaseSeeder extends Seeder
      */
     protected function createAcademicStructure(): void
     {
-        $term = AcademicTerm::query()->firstOrCreate(
-            ['name' => 'Periodo 1'],
-            ['start_date' => now()->subMonths(2)->toDateString(), 'end_date' => now()->addMonths(1)->toDateString(), 'is_current' => true],
-        );
-        $term->update(['is_current' => true]);
+        $currentYear = now()->year;
+
+        foreach ([$currentYear - 2, $currentYear - 1, $currentYear, $currentYear + 1] as $year) {
+            $name = $year.'-'.($year + 1);
+
+            $term = AcademicTerm::query()->firstOrCreate(
+                ['name' => $name],
+                [
+                    'start_date' => "{$year}-09-01",
+                    'end_date' => ($year + 1).'-08-31',
+                    'is_current' => $year === $currentYear,
+                ],
+            );
+
+            if ($year === $currentYear) {
+                AcademicTerm::query()->whereKeyNot($term->id)->update(['is_current' => false]);
+                $term->update(['is_current' => true]);
+            }
+        }
 
         $courses = [
             ['1-BAS', 'Primero de Básica', ['MAT1', 'LEN1', 'CNA1', 'ESC1', 'ING1']],

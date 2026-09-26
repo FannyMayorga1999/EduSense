@@ -22,15 +22,17 @@ class ScheduleController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $schedules = InterventionSchedule::query()
-            ->with(['student:id,first_name,last_name', 'activity:id,title,duration_minutes', 'subject:id,name'])
-            ->when($request->boolean('today'), fn ($query) => $query->whereDate('scheduled_date', now()->toDateString()))
-            ->when($request->filled('from'), fn ($query) => $query->whereDate('scheduled_date', '>=', $request->string('from')->toString()))
-            ->when($request->filled('to'), fn ($query) => $query->whereDate('scheduled_date', '<=', $request->string('to')->toString()))
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
-            ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
-            ->orderBy('scheduled_date')
-            ->paginate($request->integer('per_page', 15));
+        $schedules = $this->paginateQuery(
+            $request,
+            InterventionSchedule::query()
+                ->with(['student:id,first_name,last_name', 'activity:id,title,duration_minutes', 'subject:id,name'])
+                ->when($request->boolean('today'), fn ($query) => $query->whereDate('scheduled_date', now()->toDateString()))
+                ->when($request->filled('from'), fn ($query) => $query->whereDate('scheduled_date', '>=', $request->string('from')->toString()))
+                ->when($request->filled('to'), fn ($query) => $query->whereDate('scheduled_date', '<=', $request->string('to')->toString()))
+                ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
+                ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
+                ->orderBy('scheduled_date')
+        );
 
         return $this->success($schedules);
     }

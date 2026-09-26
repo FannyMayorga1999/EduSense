@@ -1,16 +1,16 @@
 /**
- * Tipos compartidos del cliente de EduSense (API + WebSocket).
+ * Shared types of the EduSense client (API + WebSocket).
  *
  * @author Fanny Mayorga
  * @date   16-09-2026
  */
 
-export type AreaEvaluacion = 'reading_writing' | 'math' | 'attention' | 'motor'
+export type EvaluationArea = 'reading_writing' | 'math' | 'attention' | 'motor'
 
 /**
- * Usuario autenticado devuelto por /api/v1/login y /api/v1/me.
+ * Authenticated user returned by /api/v1/login and /api/v1/me.
  */
-export interface UsuarioSession {
+export interface SessionUser {
   id: number
   name: string
   email: string
@@ -19,14 +19,14 @@ export interface UsuarioSession {
 }
 
 /**
- * Última evaluación de un estudiante, expuesta por /api/v1/dashboard/summary.
+ * Latest evaluation of a student, exposed by /api/v1/dashboard/summary.
  */
-export interface EstudianteResumen {
+export interface StudentSummary {
   id: number
   full_name: string
   document_number: string | null
   grade: string | null
-  last_area: AreaEvaluacion | null
+  last_area: EvaluationArea | null
   area_label: string | null
   score: number
   threshold: number | null
@@ -35,7 +35,7 @@ export interface EstudianteResumen {
 }
 
 /**
- * Resumen del dashboard expuesto por /api/v1/dashboard/summary.
+ * Dashboard summary exposed by /api/v1/dashboard/summary.
  */
 export interface DashboardData {
   total_students: number
@@ -43,92 +43,133 @@ export interface DashboardData {
   pending_sessions_today: number
   active_plans: number
   active_alerts: number
-  students: EstudianteResumen[]
+  students: StudentSummary[]
 }
 
 /**
- * Resultado devuelto por POST /api/v1/psychopedagogic/evaluations.
+ * Result returned by POST /api/v1/psychopedagogic/evaluations.
  */
-export interface EvaluacionResultado {
+export interface EvaluationResult {
   score: number
   threshold: number
   alerted: boolean
 }
 
 /**
- * Payload validado por el endpoint de evaluación (EvaluateStudentRequest).
+ * Payload validated by the evaluation endpoint (EvaluateStudentRequest).
  */
-export interface EvaluarPayload {
+export interface EvaluatePayload {
   student_id: number
   survey_id: number
   answers: Record<number, number>
 }
 
 /**
- * Evento recibido desde el canal WebSocket "evaluaciones".
+ * Event received from the "evaluaciones" WebSocket channel.
  */
-export interface EventoEvaluacionProcesada {
+export interface EvaluationProcessedEvent {
   student: string
   student_id: number
-  area: AreaEvaluacion
+  area: EvaluationArea
   score: number
   threshold: number
   alerted: boolean
   socket?: string
 }
 
-export interface Notificacion {
+export interface Notification {
   id: number
-  titulo: string
-  mensaje: string
-  tipo: 'alerta' | 'info'
+  title: string
+  message: string
+  type: 'alerta' | 'info'
 }
 
 /**
- * Recurso académico simple (curso o período).
+ * Simple academic resource (course or period).
  */
-export interface RecursoAcademico {
+export interface AcademicResource {
   id: number
   name: string
 }
 
 /**
- * Estudiante del registro maestro (GET/POST/PUT /v1/students).
+ * Academic term for the catalog (GET /v1/academic/terms).
  */
-export interface Estudiante {
+export interface AcademicTerm {
+  id: number
+  name: string
+  start_date: string
+  end_date: string
+  is_current: boolean
+  enrollments_count: number
+}
+
+/**
+ * Create/edit form of an academic term.
+ */
+export interface TermForm {
+  name: string
+  start_date: string
+  end_date: string
+  is_current: boolean
+}
+
+/**
+ * Student of the master catalog (GET/POST/PUT /v1/students).
+ */
+export interface Student {
   id: number
   first_name: string
   last_name: string
   birth_date: string | null
+  document_type: string
   document_number: string | null
+  gender: string | null
+  representative_name: string | null
+  representative_relation: string | null
+  contact_phone: string | null
+  contact_email: string | null
+  home_address: string | null
+  laterality: string | null
+  medical_conditions: string | null
   tutor_id: number | null
   is_active: boolean
+  academic_status: string
   full_name: string
 }
 
 /**
- * Matrícula expuesta en la lista de estudiantes.
+ * Enrollment exposed in the students list.
  */
-export interface MatriculaResumen {
+export interface EnrollmentSummary {
   id: number
   status: string
+  parallel: string | null
   course: { id: number; name: string } | null
+  term: { id: number; name: string } | null
 }
 
 /**
- * Estudiante del listado paginado (índice de estudiantes).
+ * Student with its academic context (GET /v1/students/{id}).
  */
-export interface EstudianteLista extends Estudiante {
-  enrollments: MatriculaResumen[]
+export interface StudentDetail extends Student {
+  enrollments: EnrollmentSummary[]
+}
+
+/**
+ * Student of the paginated list (students index).
+ */
+export interface StudentListItem extends Student {
+  enrollments: EnrollmentSummary[]
   psychopedagogic_records_count: number
   diagnostics_count: number
   intervention_schedules_count: number
 }
 
 /**
- * Página de Laravel usada en los endpoints que paginan (students, courses...).
+ * Laravel page shape used by the endpoints that paginate (students, courses...).
  */
-export interface Paginador<T> {
+export interface Paginator<T> {
   current_page: number
   data: T[]
   first_page_url: string | null
@@ -144,9 +185,9 @@ export interface Paginador<T> {
 }
 
 /**
- * Filtros de la lista y de la descarga de estudiantes.
+ * Filters of the students list and download.
  */
-export interface FiltrosEstudiantes {
+export interface StudentFilters {
   search?: string
   is_active?: string
   grade?: string
@@ -155,20 +196,33 @@ export interface FiltrosEstudiantes {
 }
 
 /**
- * Formulario de creación/edición de un estudiante.
+ * Create/edit wizard form of a student.
  */
-export interface EstudianteForm {
+export interface StudentForm {
   first_name: string
   last_name: string
-  document_number: string
   birth_date: string
+  document_type: string
+  document_number: string
+  gender: string
+  representative_name: string
+  representative_relation: string
+  contact_phone: string
+  contact_email: string
+  home_address: string
+  laterality: string
+  medical_conditions: string
+  course_id: string
+  term_id: string
+  parallel: string
+  academic_status: string
   is_active: boolean
 }
 
 /**
- * Resultado devuelto por POST /v1/students/import.
+ * Result returned by POST /v1/students/import.
  */
-export interface ResultadoImport {
+export interface ImportResult {
   created: number
   updated: number
   failed: number

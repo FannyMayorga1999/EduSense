@@ -22,11 +22,13 @@ class AcademicTermController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $terms = AcademicTerm::query()
-            ->withCount('enrollments')
-            ->when($request->boolean('current_only'), fn ($query) => $query->where('is_current', true))
-            ->orderByDesc('start_date')
-            ->paginate($request->integer('per_page', 15));
+        $terms = $this->paginateQuery(
+            $request,
+            AcademicTerm::query()
+                ->withCount('enrollments')
+                ->when($request->boolean('current_only'), fn ($query) => $query->where('is_current', true))
+                ->orderByDesc('start_date')
+        );
 
         return $this->success($terms);
     }

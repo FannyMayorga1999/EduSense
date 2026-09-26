@@ -22,12 +22,14 @@ class ActivityController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $activities = Activity::query()
-            ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')->toString()))
-            ->when($request->filled('difficulty_level'), fn ($query) => $query->where('difficulty_level', $request->string('difficulty_level')->toString()))
-            ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
-            ->orderBy('title')
-            ->paginate($request->integer('per_page', 15));
+        $activities = $this->paginateQuery(
+            $request,
+            Activity::query()
+                ->when($request->filled('category'), fn ($query) => $query->where('category', $request->string('category')->toString()))
+                ->when($request->filled('difficulty_level'), fn ($query) => $query->where('difficulty_level', $request->string('difficulty_level')->toString()))
+                ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
+                ->orderBy('title')
+        );
 
         return $this->success($activities);
     }

@@ -1,0 +1,86 @@
+ESPECIFICACION TECNICA DE ARQUITECTURA GENERAL Y MODULAR REACT
+
+ARBOL COMPLETO DE CARPETAS (SRC)
+
+src/
+|-- assets/          # Recursos estaticos: imagenes, iconos, fuentes y estilos globales
+|-- components/      # Componentes UI globales, reutilizables y atomicos (Button, Input, Modal, Table)
+|-- features/        # Modulos organizados por dominio de negocio y subsistemas
+|   -- system/      # Dominio contenedor para Administracion y Sistema |       |-- auth/    # Submodulo: Autenticacion, login, sesion y tokens |       |   |-- components/ |       |   |-- hooks/ |       |   |-- services/ |       |   -- index.js
+|       |-- users/   # Submodulo: Gestion y CRUD de usuarios
+|       |   |-- components/
+|       |   |-- hooks/
+|       |   |-- services/
+|       |   -- index.js |       |-- roles/   # Submodulo: Matriz de roles, permisos y accesos |       |   |-- components/ |       |   |-- hooks/ |       |   |-- services/ |       |   -- index.js
+|       |-- settings/# Submodulo: Configuracion general de la plataforma
+|       |   |-- components/
+|       |   |-- hooks/
+|       |   |-- services/
+|       |   -- index.js |       -- index.js # Exportaciones generales del dominio system
+|-- hooks/           # Custom Hooks globales e independientes (ej. useDebounce, useLocalStorage)
+|-- pages/           # Vistas asociadas al enrutador (React Router) que ensamblan los modulos
+|   -- system/      # Paginas exclusivas de las rutas del sistema (UsersPage, RolesPage, etc.) |-- services/        # Cliente HTTP base (Axios/Fetch) con interceptores y configuracion global -- utils/           # Funciones puras auxiliares, formateadores de datos, validadores y constantes
+
+DEFINICION Y RESPONSABILIDAD DE CARPETAS RAIZ
+
+src/assets/
+Almacena archivos estaticos que no cambian en tiempo de ejecucion: imagenes, logotipos, archivos SVG, fuentes tipograficas y hojas de estilo globales (CSS/SASS/Tailwind base).
+
+src/components/
+Almacena componentes de interfaz totalmente agnosticos al dominio de negocio. Son componentes puros de UI que pueden reutilizarse en cualquier parte del sistema (ejemplo: Botones, Modales, Inputs, Selects, Tablas base).
+
+src/features/
+Contiene la logica de negocio dividida por dominios. En este caso, el dominio contenedor "system/" agrupa los subsistemas de administracion interna (auth, users, roles, settings).
+
+src/hooks/
+Contiene Custom Hooks utilitarios de uso global que no pertenecen a ningun dominio especifico (ejemplo: hooks para detectar clic fuera de un elemento, hooks para tema claro/oscuro, debounce de busqueda).
+
+src/pages/
+Contiene los componentes de vista superior asociados a las rutas de la aplicacion. Su unica responsabilidad es ensamblar la estructura de la pantalla importando componentes expuestos por los modulos en "features/".
+
+src/services/
+Contiene la instancia global del cliente HTTP (Axios o Fetch) configurado con la URL base, headers por defecto e interceptores para adjuntar tokens JWT o gestionar errores 401/403.
+
+src/utils/
+Funciones utilitarias puras que reciben un valor y retornan un resultado sin efectos secundarios (ejemplo: formateadores de fechas, formateadores de moneda, validadores de cedula/RUC, constantes globales).
+
+ESTRUCTURA INTERNA DE SUBMODULOS EN FEATURES/SYSTEM/
+
+Cada submódulo (auth, users, roles, settings) es un ecosistema autónomo con las siguientes carpetas:
+
+components/
+Componentes de UI exclusivos del módulo (ejemplo: UserTable, PermissionMatrix, LoginForm). No se usan fuera de este módulo salvo que la Public API los exponga.
+
+hooks/
+Custom Hooks específicos que encapsulan el estado local, efectos (useEffect) y la orquestación de llamadas asíncronas del módulo.
+
+services/
+Funciones puras que ejecutan las llamadas HTTP a los endpoints del backend correspondientes al módulo.
+
+index.js (Public API)
+Punto de entrada oficial del submódulo. Es el único archivo que puede ser importado desde el exterior.
+
+REGLAS OBLIGATORIAS DE ARQUITECTURA Y BUENAS PRACTICAS
+
+Regla de la Public API (index.js):
+Todo lo que esté dentro de components/, hooks/ y services/ de un submódulo se considera PRIVADO. Solo se puede consumir desde afuera lo que esté explícitamente exportado en el index.js del submódulo.
+
+Prohibición de Imports Profundos:
+
+CORRECTO: import { UserTable, useUsers } from '@/features/system/users';
+
+INCORRECTO: import { UserTable } from '@/features/system/users/components/UserTable/UserTable';
+
+Separación Estricta de Responsabilidades:
+
+UI (components): Solo renderiza JSX y gestiona eventos visuales.
+
+Estado y Lógica (hooks): Maneja la lógica de negocio, estados locales o diferidos y efectos.
+
+Peticiones HTTP (services): Realiza las llamadas a la API y retorna los datos procesados.
+
+Criterio de Reutilización:
+Si un componente o función solo se usa dentro de "users", vive dentro de "features/system/users/". Si empieza a usarse en múltiples dominios distintos, se promueve a "src/components/", "src/hooks/" o "src/utils/".
+
+Páginas Delgadas:
+Las pantallas dentro de "src/pages/" no deben contener llamadas fetch directas ni lógica compleja de estado. Solo reciben parámetros de ruta, llaman al hook del módulo y renderizan el componente del módulo.

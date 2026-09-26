@@ -3,56 +3,56 @@ import { Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Languages, Menu, Moon, Sun } from 'lucide-react'
 import Sidebar from './Sidebar'
-import { useModoOscuro } from '../hooks/useTheme'
+import { useDarkMode } from '../hooks/useTheme'
 import RequireAuth from '../auth/RequireAuth'
 
 /**
- * Shell autenticado de EduSense: menú lateral (sidebar) con navegación por
- * roles, cabecera superior con selectores de idioma/tema y el contenido de
- * la ruta activa mediante <Outlet />.
+ * Authenticated shell of EduSense: lateral sidebar with role-based
+ * navigation, top header with language/theme selectors and the active route
+ * content rendered via <Outlet />.
  *
  * @author Fanny Mayorga
  * @date   20-09-2026
  */
 function Home() {
   const { t, i18n } = useTranslation()
-  const { oscuro, alternar } = useModoOscuro()
-  const [menuAbierto, setMenuAbierto] = useState<boolean>(false)
+  const { dark, toggle } = useDarkMode()
+  const [menuOpen, setMenuOpen] = useState<boolean>(false)
 
-  const alternarIdioma = (): void => {
+  const toggleLanguage = (): void => {
     void i18n.changeLanguage(i18n.language === 'es' ? 'en' : 'es')
   }
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900 transition-colors duration-200 dark:bg-stone-900 dark:text-white">
-      <Sidebar abierto={menuAbierto} cerrar={() => setMenuAbierto(false)} />
+    <div className="ed-shell">
+      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      <div className="flex min-h-screen flex-col lg:pl-72">
-        <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/80 backdrop-blur dark:border-stone-700 dark:bg-stone-900/80">
-          <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
-            <div className="flex items-center gap-2.5">
+      <div className="ed-shell__cuerpo">
+        <header className="ed-shell__header">
+          <div className="ed-shell__header-in">
+            <div className="ed-shell__izq">
               <button
                 type="button"
-                onClick={() => setMenuAbierto(true)}
+                onClick={() => setMenuOpen(true)}
                 title={t('sidebar.open')}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 transition hover:bg-stone-50 lg:hidden dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
+                className="ed-shell__icon-btn lg:hidden"
               >
                 <Menu className="h-5 w-5" />
               </button>
-              <div className="lg:hidden">
-                <p className="text-lg font-bold leading-tight">{t('app.name')}</p>
-                <p className="hidden text-xs text-stone-500 dark:text-stone-400 sm:block">
+              <div className="ed-shell__marca">
+                <p className="ed-shell__title">{t('app.name')}</p>
+                <p className="ed-shell__tagline">
                   {t('app.tagline')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="ed-shell__der">
               <button
                 type="button"
-                onClick={alternarIdioma}
+                onClick={toggleLanguage}
                 title={t('app.language')}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
+                className="ed-shell__lang"
               >
                 <Languages className="h-4 w-4" />
                 <span className="hidden sm:inline">{i18n.language === 'es' ? 'EN' : 'ES'}</span>
@@ -60,30 +60,30 @@ function Home() {
 
               <button
                 type="button"
-                onClick={alternar}
-                title={oscuro ? t('app.light_mode') : t('app.dark_mode')}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 transition hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
+                onClick={toggle}
+                title={dark ? t('app.light_mode') : t('app.dark_mode')}
+                className="ed-shell__icon-btn"
               >
-                {oscuro ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
             </div>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
+        <main className="ed-shell__main">
           <Outlet />
-        </main>
 
-        <footer className="mx-auto w-full max-w-7xl px-4 pb-8 pt-4 text-center text-xs text-stone-400 dark:text-stone-600 sm:px-6">
-          EduSense &middot; Fanny Mayorga
-        </footer>
+          <footer className="ed-shell__footer">
+            EduSense &middot; Fanny Mayorga
+          </footer>
+        </main>
       </div>
     </div>
   )
 }
 
 /**
- * Ruta protegida: si no hay sesión, RequireAuth redirige al login.
+ * Protected route: if there is no session, RequireAuth redirects to login.
  */
 export default function HomeRoute() {
   return (

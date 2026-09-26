@@ -21,13 +21,15 @@ class DiagnosticController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $diagnostics = Diagnostic::query()
-            ->with(['student:id,first_name,last_name', 'neeCategory:id,name', 'detector:id,name'])
-            ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
-            ->when($request->filled('severity'), fn ($query) => $query->where('severity', $request->string('severity')->toString()))
-            ->when($request->filled('nee_category_id'), fn ($query) => $query->where('nee_category_id', $request->integer('nee_category_id')))
-            ->orderByDesc('detected_at')
-            ->paginate($request->integer('per_page', 15));
+        $diagnostics = $this->paginateQuery(
+            $request,
+            Diagnostic::query()
+                ->with(['student:id,first_name,last_name', 'neeCategory:id,name', 'detector:id,name'])
+                ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
+                ->when($request->filled('severity'), fn ($query) => $query->where('severity', $request->string('severity')->toString()))
+                ->when($request->filled('nee_category_id'), fn ($query) => $query->where('nee_category_id', $request->integer('nee_category_id')))
+                ->orderByDesc('detected_at')
+        );
 
         return $this->success($diagnostics);
     }

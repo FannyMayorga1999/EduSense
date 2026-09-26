@@ -2,8 +2,8 @@ import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
 
 /**
- * Cliente Laravel Echo conectado al servidor Laravel Reverb (WebSocket).
- * Los valores se leen desde las variables de entorno VITE_REVERB_*.
+ * Laravel Echo client connected to the Laravel Reverb server (WebSocket).
+ * Values are read from the VITE_REVERB_* environment variables.
  *
  * @author Fanny Mayorga
  * @date   16-09-2026

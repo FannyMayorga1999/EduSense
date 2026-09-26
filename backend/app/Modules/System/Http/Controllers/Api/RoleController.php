@@ -22,12 +22,14 @@ class RoleController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $roles = Role::query()
-            ->withCount('users')
-            ->when($request->string('search')->toString(), fn ($query, $search) => $query
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('slug', 'like', "%{$search}%"))
-            ->paginate($request->integer('per_page', 15));
+        $roles = $this->paginateQuery(
+            $request,
+            Role::query()
+                ->withCount('users')
+                ->when($request->string('search')->toString(), fn ($query, $search) => $query
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%"))
+        );
 
         return $this->success($roles);
     }

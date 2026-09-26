@@ -1,32 +1,29 @@
 import type { ReactNode } from 'react'
 
 /**
- * Envoltorio de campo con etiqueta, ayuda y mensaje de error del kit UI.
+ * Field wrapper with label, hint and error message of the UI kit.
  *
  * @author Fanny Mayorga
+ * @date   26-09-2026
  */
 
 interface FieldProps {
-  etiqueta: string
-  htmlPara?: string
+  label: string
+  htmlFor?: string
   error?: string | null
-  ayuda?: string
+  hint?: string
   children: ReactNode
 }
 
-export default function Field({ etiqueta, htmlPara, error, ayuda, children }: FieldProps) {
+export default function Field({ label, htmlFor, error, hint, children }: FieldProps) {
   return (
-    <div className="space-y-1.5">
-      <label htmlFor={htmlPara} className="block text-sm font-medium text-stone-700 dark:text-stone-300">
-        {etiqueta}
+    <div className="ed-field">
+      <label htmlFor={htmlFor} className="ed-field__label">
+        {label}
       </label>
       {children}
-      {ayuda !== undefined && error === null && (
-        <p className="text-xs text-stone-500 dark:text-stone-400">{ayuda}</p>
-      )}
-      {error !== null && (
-        <p className="text-xs font-medium text-rose-600 dark:text-rose-400">{error}</p>
-      )}
+      {hint !== undefined && error === null && <p className="ed-field__ayuda">{hint}</p>}
+      {error !== null && <p className="ed-field__error">{error}</p>}
     </div>
   )
 }

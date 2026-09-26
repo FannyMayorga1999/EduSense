@@ -8,174 +8,174 @@ import Field from '../ui/Field'
 import Select from '../ui/Select'
 import Button from '../ui/Button'
 import Badge from '../ui/Badge'
-import { importarEstudiantes, obtenerCursos, obtenerTerminos } from '../../api'
-import type { RecursoAcademico, ResultadoImport } from '../../types'
+import { fetchCourses, fetchTerms, importStudents } from '../../api'
+import type { AcademicResource, ImportResult } from '../../types'
 
 /**
- * Modal de carga masiva de estudiantes (CSV). Permite elegir el separador,
- * matricular opcionalmente al curso/período y muestra el resumen de la
- * importación con los errores por fila.
+ * Bulk student import modal (CSV). Lets the user choose the separator,
+ * optionally enroll into a course/term and shows the import summary with the
+ * per-row errors.
  *
  * @author Fanny Mayorga
  */
 
 interface StudentImportModalProps {
-  abierto: boolean
-  onCerrar: () => void
-  onImportado: () => void
+  open: boolean
+  onClose: () => void
+  onImported: () => void
 }
 
-export default function StudentImportModal({ abierto, onCerrar, onImportado }: StudentImportModalProps) {
+export default function StudentImportModal({ open, onClose, onImported }: StudentImportModalProps) {
   const { t } = useTranslation()
 
-  const [archivo, setArchivo] = useState<File | null>(null)
-  const [separador, setSeparador] = useState<string>(';')
-  const [matricular, setMatricular] = useState<boolean>(false)
-  const [cursoId, setCursoId] = useState<string>('')
-  const [terminoId, setTerminoId] = useState<string>('')
-  const [cursos, setCursos] = useState<RecursoAcademico[]>([])
-  const [terminos, setTerminos] = useState<RecursoAcademico[]>([])
-  const [enviando, setEnviando] = useState<boolean>(false)
+  const [file, setFile] = useState<File | null>(null)
+  const [separator, setSeparator] = useState<string>(';')
+  const [enroll, setEnroll] = useState<boolean>(false)
+  const [courseId, setCourseId] = useState<string>('')
+  const [termId, setTermId] = useState<string>('')
+  const [courses, setCourses] = useState<AcademicResource[]>([])
+  const [terms, setTerms] = useState<AcademicResource[]>([])
+  const [submitting, setSubmitting] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-  const [resultado, setResultado] = useState<ResultadoImport | null>(null)
+  const [result, setResult] = useState<ImportResult | null>(null)
 
   useEffect(() => {
-    if (!abierto) {
+    if (!open) {
       return
     }
 
-    setArchivo(null)
-    setSeparador(';')
-    setMatricular(false)
-    setCursoId('')
-    setTerminoId('')
-    setEnviando(false)
+    setFile(null)
+    setSeparator(';')
+    setEnroll(false)
+    setCourseId('')
+    setTermId('')
+    setSubmitting(false)
     setError(null)
-    setResultado(null)
+    setResult(null)
 
-    void obtenerCursos().then(setCursos).catch(() => setCursos([]))
-    void obtenerTerminos().then(setTerminos).catch(() => setTerminos([]))
-  }, [abierto])
+    void fetchCourses().then(setCourses).catch(() => setCourses([]))
+    void fetchTerms().then(setTerms).catch(() => setTerms([]))
+  }, [open])
 
-  const elegirArchivo = (evento: ChangeEvent<HTMLInputElement>): void => {
-    setArchivo(evento.target.files?.[0] ?? null)
-    setResultado(null)
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    setFile(event.target.files?.[0] ?? null)
+    setResult(null)
     setError(null)
   }
 
-  const descargarPlantilla = (): void => {
-    const encabezado = 'document_number,first_name,last_name,birth_date'
-    const ejemplo = '1712345678,María,José,2015-03-12'
-    const blob = new Blob([`\uFEFF${encabezado}\n${ejemplo}\n`], { type: 'text/csv;charset=utf-8' })
+  const downloadTemplate = (): void => {
+    const header = 'document_number,first_name,last_name,birth_date'
+    const example = '1712345678,María,José,2015-03-12'
+    const blob = new Blob([`\uFEFF${header}\n${example}\n`], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
-    const enlace = document.createElement('a')
+    const link = document.createElement('a')
 
-    enlace.href = url
-    enlace.download = 'plantilla_estudiantes.csv'
-    document.body.appendChild(enlace)
-    enlace.click()
-    enlace.remove()
+    link.href = url
+    link.download = 'plantilla_estudiantes.csv'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
     URL.revokeObjectURL(url)
   }
 
-  const enviar = async (evento: FormEvent): Promise<void> => {
-    evento.preventDefault()
+  const submit = async (event: FormEvent): Promise<void> => {
+    event.preventDefault()
 
-    if (archivo === null) {
+    if (file === null) {
       setError(t('students.import.file_required'))
 
       return
     }
 
-    if (matricular && (cursoId === '' || terminoId === '')) {
+    if (enroll && (courseId === '' || termId === '')) {
       setError(t('students.import.enroll_incomplete'))
 
       return
     }
 
-    setEnviando(true)
+    setSubmitting(true)
     setError(null)
 
     try {
-      const resumen = await importarEstudiantes(
-        archivo,
-        separador,
-        matricular ? { course_id: Number(cursoId), term_id: Number(terminoId) } : undefined,
+      const summary = await importStudents(
+        file,
+        separator,
+        enroll ? { course_id: Number(courseId), term_id: Number(termId) } : undefined,
       )
 
-      setResultado(resumen)
-      onImportado()
-    } catch (motivo) {
-      if (isAxiosError(motivo)) {
+      setResult(summary)
+      onImported()
+    } catch (reason) {
+      if (isAxiosError(reason)) {
         setError(t('students.import.error_validation'))
       } else {
         setError(t('students.import.error_generic'))
       }
     } finally {
-      setEnviando(false)
+      setSubmitting(false)
     }
   }
 
-  const reiniciar = (): void => {
-    setArchivo(null)
-    setResultado(null)
+  const reset = (): void => {
+    setFile(null)
+    setResult(null)
     setError(null)
   }
 
   return (
-    <Modal abierto={abierto} onCerrar={onCerrar} titulo={t('students.import.title')}>
-      {resultado === null ? (
-        <form className="space-y-4" onSubmit={(evento) => void enviar(evento)}>
-          <div className="rounded-xl border border-stone-200 bg-stone-50 p-3.5 text-xs leading-relaxed text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
+    <Modal open={open} onClose={onClose} title={t('students.import.title')} size="wide">
+      {result === null ? (
+        <form className="ed-form ed-form--simple" onSubmit={(event) => void submit(event)}>
+          <div className="ed-aviso">
             {t('students.import.hint')}
           </div>
 
-          <Field etiqueta={t('students.import.file')}>
-            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-stone-300 bg-white px-4 py-6 text-sm font-medium text-stone-500 transition hover:border-primary-400 hover:text-primary-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-400 dark:hover:border-primary-500">
-              <FileUp className="h-5 w-5" />
-              <span className="truncate">{archivo !== null ? archivo.name : t('students.import.choose')}</span>
-              <input type="file" accept=".csv,.txt,text/csv,text/plain" className="hidden" onChange={elegirArchivo} />
+          <Field label={t('students.import.file')}>
+            <label className="ed-dropzone">
+              <FileUp className="ed-dropzone__icono" />
+              <span className="truncate">{file !== null ? file.name : t('students.import.choose')}</span>
+              <input type="file" accept=".csv,.txt,text/csv,text/plain" className="hidden" onChange={handleFileChange} />
             </label>
           </Field>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <Field etiqueta={t('students.import.separator')} htmlPara="separator">
-              <Select id="separator" value={separador} onChange={(evento) => setSeparador(evento.target.value)}>
+          <div className="ed-malla">
+            <Field label={t('students.import.separator')} htmlFor="separator">
+              <Select id="separator" value={separator} onChange={(event) => setSeparator(event.target.value)}>
                 <option value=",">{t('students.import.separator_comma')}</option>
                 <option value=";">{t('students.import.separator_semicolon')}</option>
               </Select>
             </Field>
           </div>
 
-          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 dark:border-stone-700 dark:bg-stone-900">
+          <label className="ed-toggle">
             <input
               type="checkbox"
-              checked={matricular}
-              onChange={(evento) => setMatricular(evento.target.checked)}
-              className="h-4 w-4 rounded border-stone-300 text-primary-600 focus:ring-primary-500"
+              checked={enroll}
+              onChange={(event) => setEnroll(event.target.checked)}
+              className="ed-checkbox"
             />
-            <span className="text-sm font-medium text-stone-700 dark:text-stone-300">{t('students.import.enroll')}</span>
+            <span className="ed-toggle__texto">{t('students.import.enroll')}</span>
           </label>
 
-          {matricular && (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field etiqueta={t('students.import.course')} htmlPara="course">
-                <Select id="course" value={cursoId} onChange={(evento) => setCursoId(evento.target.value)}>
+          {enroll && (
+            <div className="ed-malla">
+              <Field label={t('students.import.course')} htmlFor="course">
+                <Select id="course" value={courseId} onChange={(event) => setCourseId(event.target.value)}>
                   <option value="">{t('students.import.course_placeholder')}</option>
-                  {cursos.map((curso) => (
-                    <option key={curso.id} value={curso.id}>
-                      {curso.name}
+                  {courses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.name}
                     </option>
                   ))}
                 </Select>
               </Field>
 
-              <Field etiqueta={t('students.import.term')} htmlPara="term">
-                <Select id="term" value={terminoId} onChange={(evento) => setTerminoId(evento.target.value)}>
+              <Field label={t('students.import.term')} htmlFor="term">
+                <Select id="term" value={termId} onChange={(event) => setTermId(event.target.value)}>
                   <option value="">{t('students.import.term_placeholder')}</option>
-                  {terminos.map((termino) => (
-                    <option key={termino.id} value={termino.id}>
-                      {termino.name}
+                  {terms.map((term) => (
+                    <option key={term.id} value={term.id}>
+                      {term.name}
                     </option>
                   ))}
                 </Select>
@@ -184,58 +184,75 @@ export default function StudentImportModal({ abierto, onCerrar, onImportado }: S
           )}
 
           {error !== null && (
-            <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm font-medium text-rose-700 dark:border-rose-500/40 dark:bg-rose-950/60 dark:text-rose-300">
+            <p className="ed-alerta">
               {error}
             </p>
           )}
 
-          <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
-            <Button variante="ghost" tamano="sm" type="button" onClick={descargarPlantilla}>
+          <div className="ed-acciones ed-acciones--simple">
+            <Button
+              variant="ghost"
+              iconOnly
+              type="button"
+              onClick={downloadTemplate}
+              title={t('students.import.download_template')}
+              aria-label={t('students.import.download_template')}
+            >
               <Download className="h-4 w-4" />
-              {t('students.import.download_template')}
             </Button>
 
-            <Button variante="secondary" type="button" onClick={onCerrar}>
+            <Button variant="secondary" type="button" onClick={onClose}>
               {t('students.confirm.cancel')}
             </Button>
 
-            <Button type="submit" cargando={enviando}>
+            <Button
+              type="submit"
+              iconOnly
+              loading={submitting}
+              title={t('students.import.upload')}
+              aria-label={t('students.import.upload')}
+            >
               <Upload className="h-4 w-4" />
-              {enviando ? t('students.import.uploading') : t('students.import.upload')}
             </Button>
           </div>
         </form>
       ) : (
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            <Badge tono="emerald">{t('students.import.created', { count: resultado.created })}</Badge>
-            <Badge tono="sky">{t('students.import.updated', { count: resultado.updated })}</Badge>
-            <Badge tono={resultado.failed > 0 ? 'rose' : 'stone'}>
-              {t('students.import.failed', { count: resultado.failed })}
+          <div className="ed-resultado__badges">
+            <Badge tone="emerald">{t('students.import.created', { count: result.created })}</Badge>
+            <Badge tone="sky">{t('students.import.updated', { count: result.updated })}</Badge>
+            <Badge tone={result.failed > 0 ? 'rose' : 'stone'}>
+              {t('students.import.failed', { count: result.failed })}
             </Badge>
           </div>
 
-          {resultado.errors.length > 0 && (
+          {result.errors.length > 0 && (
             <div className="space-y-1.5">
               <p className="text-sm font-semibold text-stone-700 dark:text-stone-200">{t('students.import.errors_title')}</p>
-              <ol className="max-h-48 space-y-1 overflow-y-auto rounded-xl border border-stone-200 bg-stone-50 p-3 text-xs text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
-                {resultado.errors.map((errorFila, indice) => (
-                  <li key={indice} className="flex gap-2">
-                    <span className="shrink-0 text-rose-500">&bull;</span>
-                    {errorFila}
+              <ol className="ed-lista-errores">
+                {result.errors.map((rowError, index) => (
+                  <li key={index} className="flex gap-2">
+                    <span className="ed-lista-errores__punto">&bull;</span>
+                    {rowError}
                   </li>
                 ))}
               </ol>
             </div>
           )}
 
-          <div className="flex flex-wrap justify-end gap-2 pt-1">
-            <Button variante="ghost" tamano="sm" type="button" onClick={reiniciar}>
+          <div className="ed-acciones ed-acciones--simple">
+            <Button
+              variant="ghost"
+              iconOnly
+              type="button"
+              onClick={reset}
+              title={t('students.import.another')}
+              aria-label={t('students.import.another')}
+            >
               <RotateCcw className="h-4 w-4" />
-              {t('students.import.another')}
             </Button>
 
-            <Button type="button" onClick={onCerrar}>
+            <Button type="button" onClick={onClose}>
               {t('students.import.close')}
             </Button>
           </div>

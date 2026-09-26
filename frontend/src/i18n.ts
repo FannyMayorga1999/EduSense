@@ -4,7 +4,7 @@ import es from './locales/es.json'
 import en from './locales/en.json'
 
 /**
- * Configuración del soporte multilenguaje (Español / Inglés).
+ * Multilanguage support configuration (Spanish / English).
  *
  * @author Fanny Mayorga
  * @date   16-09-2026

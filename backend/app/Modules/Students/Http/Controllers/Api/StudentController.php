@@ -3,6 +3,7 @@
 namespace App\Modules\Students\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Academic\Models\Enrollment;
 use App\Modules\Administration\Services\AuditService;
 use App\Modules\Psychopedagogic\Services\PsychopedagogicEvaluationService;
 use App\Modules\Students\Http\Requests\ImportStudentsRequest;
@@ -60,11 +61,13 @@ class StudentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $students = $this->studentsQuery($request)
-            ->with('enrollments.course:id,name')
-            ->orderBy('last_name')
-            ->orderBy('first_name')
-            ->paginate($request->integer('per_page', 15));
+        $students = $this->paginateQuery(
+            $request,
+            $this->studentsQuery($request)
+                ->with('enrollments.course:id,name')
+                ->orderBy('last_name')
+                ->orderBy('first_name')
+        );
 
         return $this->success($students);
     }
@@ -74,7 +77,15 @@ class StudentController extends Controller
      */
     public function store(StoreStudentRequest $request): JsonResponse
     {
-        $student = Student::query()->create($request->validated());
+        $payload = collect($request->safe()->except(['course_id', 'term_id', 'parallel', 'academic_status']))
+            ->map(fn (mixed $value) => $this->nullableString($value))
+            ->all();
+
+        $student = Student::query()->create($payload);
+
+        $this->syncAcademicData($student, $request->validated());
+
+        $student->refresh()->load('enrollments.course:id,name');
 
         $this->audit->record('students.create', 'students', ['student_id' => $student->id]);
 
@@ -106,11 +117,79 @@ class StudentController extends Controller
      */
     public function update(UpdateStudentRequest $request, Student $student): JsonResponse
     {
-        $student->update($request->validated());
+        $payload = collect($request->safe()->except(['course_id', 'term_id', 'parallel', 'academic_status']))
+            ->map(fn (mixed $value) => $this->nullableString($value))
+            ->all();
+
+        $student->update($payload);
+
+        $this->syncAcademicData($student, $request->validated());
 
         $this->audit->record('students.update', 'students', ['student_id' => $student->id]);
 
-        return $this->success($student, 'Student updated.');
+        return $this->success($student->load('enrollments.course:id,name'), 'Student updated.');
+    }
+
+    /**
+     * Syncs the current enrollment from the academic section of the request.
+     *
+     * When a term is provided the enrollment of that term is created/updated.
+     * The academic status maps to the enrollment status and the logical state
+     * of the student as follows: active -> enrollment active; inactive ->
+     * logical delete (is_active=false); graduated -> enrollment completed;
+     * retired -> enrollment retired. The "active|graduated|retired" mappings
+     * never override the system state (is_active) sent by the form.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    protected function syncAcademicData(Student $student, array $data): void
+    {
+        $termId = $this->nullableInt(data_get($data, 'term_id'));
+        $status = data_get($data, 'academic_status');
+
+        if ($termId !== null) {
+            $current = $student->enrollments()->where('term_id', $termId)->first();
+
+            Enrollment::query()->updateOrCreate(
+                ['student_id' => $student->id, 'term_id' => $termId],
+                [
+                    'course_id' => $this->nullableInt(data_get($data, 'course_id')) ?? $current?->course_id,
+                    'parallel' => $this->nullableString(data_get($data, 'parallel')),
+                    'status' => match ($status) {
+                        'graduated', 'retired' => $status === 'graduated' ? 'completed' : 'retired',
+                        default => 'active',
+                    },
+                ],
+            );
+        }
+
+        if ($status === 'inactive') {
+            $student->forceFill(['is_active' => false])->save();
+        }
+    }
+
+    /**
+     * Normalizes an optional integer field of the request.
+     */
+    protected function nullableInt(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (int) $value;
+    }
+
+    /**
+     * Normalizes an optional string field of the request.
+     */
+    protected function nullableString(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (string) $value;
     }
 
     /**

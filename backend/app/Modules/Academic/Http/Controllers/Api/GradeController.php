@@ -27,13 +27,16 @@ class GradeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $grades = Grade::query()
-            ->with(['student:id,first_name,last_name', 'subject:id,name,code', 'term:id,name'])
-            ->when($request->filled('term_id'), fn ($query) => $query->where('term_id', $request->integer('term_id')))
-            ->when($request->filled('subject_id'), fn ($query) => $query->where('subject_id', $request->integer('subject_id')))
-            ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
-            ->orderByDesc('created_at')
-            ->paginate($request->integer('per_page', 25));
+        $grades = $this->paginateQuery(
+            $request,
+            Grade::query()
+                ->with(['student:id,first_name,last_name', 'subject:id,name,code', 'term:id,name'])
+                ->when($request->filled('term_id'), fn ($query) => $query->where('term_id', $request->integer('term_id')))
+                ->when($request->filled('subject_id'), fn ($query) => $query->where('subject_id', $request->integer('subject_id')))
+                ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
+                ->orderByDesc('created_at'),
+            25
+        );
 
         return $this->success($grades);
     }

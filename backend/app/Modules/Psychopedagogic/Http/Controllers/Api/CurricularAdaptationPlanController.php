@@ -21,12 +21,14 @@ class CurricularAdaptationPlanController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $plans = CurricularAdaptationPlan::query()
-            ->with(['student:id,first_name,last_name', 'creator:id,name'])
-            ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
-            ->orderByDesc('start_date')
-            ->paginate($request->integer('per_page', 15));
+        $plans = $this->paginateQuery(
+            $request,
+            CurricularAdaptationPlan::query()
+                ->with(['student:id,first_name,last_name', 'creator:id,name'])
+                ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
+                ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
+                ->orderByDesc('start_date')
+        );
 
         return $this->success($plans);
     }

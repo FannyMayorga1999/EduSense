@@ -1,56 +1,57 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Bell, CalendarCheck2, FileText, RefreshCw, Users } from 'lucide-react'
-import { evaluarYAsignarCronograma, obtenerResumenDashboard, payloadDeDemostracion } from '../api'
+import { buildDemoPayload, fetchDashboardSummary, submitEvaluation } from '../api'
 import echo from '../echo'
 import type {
-  AreaEvaluacion,
   DashboardData,
-  EstudianteResumen,
-  EvaluacionResultado,
-  EventoEvaluacionProcesada,
-  Notificacion,
+  EvaluationArea,
+  EvaluationProcessedEvent,
+  EvaluationResult,
+  Notification,
+  StudentSummary,
 } from '../types'
 import KpiCard from './KpiCard'
 import Button from './ui/Button'
 
 /**
- * Estilos de badge y barra de progreso por área de alerta.
+ * Badge and progress bar styles per alert area.
  *
  * @author Fanny Mayorga
  * @date   16-09-2026
  */
-const COLORES_AREA: Record<AreaEvaluacion, { badge: string; barra: string }> = {
-  attention: { badge: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300', barra: 'bg-rose-500' },
-  reading_writing: { badge: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300', barra: 'bg-amber-500' },
-  math: { badge: 'bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-300', barra: 'bg-sky-500' },
-  motor: { badge: 'bg-violet-100 text-violet-800 dark:bg-violet-500/20 dark:text-violet-300', barra: 'bg-violet-500' },
+const AREA_COLORS: Record<EvaluationArea, { badge: string; barra: string }> = {
+  attention: { badge: 'ed-badge--rose', barra: 'bg-rose-500' },
+  reading_writing: { badge: 'ed-badge--amber', barra: 'bg-amber-500' },
+  math: { badge: 'ed-badge--sky', barra: 'bg-sky-500' },
+  motor: { badge: 'ed-badge--violet', barra: 'bg-violet-500' },
 }
 
 /**
- * Devuelve los estilos del estudiante según su área de alerta (o verde sin alerta).
+ * Returns the alert styles of a student according to its alert area (or green
+ * without alert).
  *
  * @author Fanny Mayorga
  * @date   16-09-2026
  */
-function estilosAlerta(area: AreaEvaluacion | null): { badge: string; barra: string } {
+function alertStyles(area: EvaluationArea | null): { badge: string; barra: string } {
   if (area === null) {
     return {
-      badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300',
+      badge: 'ed-badge--emerald',
       barra: 'bg-emerald-500',
     }
   }
 
-  return COLORES_AREA[area]
+  return AREA_COLORS[area]
 }
 
 /**
- * Reproduce un tono breve de alerta usando la Web Audio API.
+ * Plays a short alert tone using the Web Audio API.
  *
  * @author Fanny Mayorga
  * @date   16-09-2026
  */
-function reproducirSonidoAlerta(): void {
+function playAlertSound(): void {
   try {
     const AudioContextCtor =
       window.AudioContext ??
@@ -60,29 +61,29 @@ function reproducirSonidoAlerta(): void {
       return
     }
 
-    const contexto = new AudioContextCtor()
-    const oscilador = contexto.createOscillator()
-    const ganancia = contexto.createGain()
+    const context = new AudioContextCtor()
+    const oscillator = context.createOscillator()
+    const gain = context.createGain()
 
-    oscilador.connect(ganancia)
-    ganancia.connect(contexto.destination)
+    oscillator.connect(gain)
+    gain.connect(context.destination)
 
-    oscilador.type = 'sine'
-    oscilador.frequency.value = 880
+    oscillator.type = 'sine'
+    oscillator.frequency.value = 880
 
-    ganancia.gain.setValueAtTime(0.12, contexto.currentTime)
-    ganancia.gain.exponentialRampToValueAtTime(0.0001, contexto.currentTime + 0.6)
+    gain.gain.setValueAtTime(0.12, context.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.6)
 
-    oscilador.start(contexto.currentTime)
-    oscilador.stop(contexto.currentTime + 0.6)
+    oscillator.start(context.currentTime)
+    oscillator.stop(context.currentTime + 0.6)
   } catch {
-    // El navegador puede bloquear el audio autónomo; la alerta visual sigue activa.
+    // The browser may block autonomous audio; the visual alert keeps working.
   }
 }
 
 /**
- * Componente principal del Dashboard con soporte de tiempo real (WebSocket).
- * Muestra KPIs, la tabla de estudiantes evaluados y notificaciones de alertas.
+ * Main Dashboard component with real-time support (WebSocket). Shows KPIs,
+ * the evaluated students table and alert notifications.
  *
  * @author Fanny Mayorga
  * @date   16-09-2026
@@ -90,175 +91,175 @@ function reproducirSonidoAlerta(): void {
 export default function Dashboard() {
   const { t } = useTranslation()
 
-  const [datos, setDatos] = useState<DashboardData | null>(null)
-  const [cargando, setCargando] = useState<boolean>(true)
+  const [data, setData] = useState<DashboardData | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const [procesando, setProcesando] = useState<boolean>(false)
-  const [notificaciones, setNotificaciones] = useState<Notificacion[]>([])
+  const [processing, setProcessing] = useState<boolean>(false)
+  const [notifications, setNotifications] = useState<Notification[]>([])
 
-  const contadorNotificaciones = useRef<number>(0)
+  const notificationCounter = useRef<number>(0)
 
   /**
-   * Añade una notificación transitoria a la pila visible.
+   * Adds a transient notification to the visible stack.
    *
    * @author Fanny Mayorga
    * @date   16-09-2026
    */
-  const agregarNotificacion = useCallback((titulo: string, mensaje: string, tipo: 'alerta' | 'info'): void => {
-    const id = ++contadorNotificaciones.current
+  const addNotification = useCallback((title: string, message: string, type: 'alerta' | 'info'): void => {
+    const id = ++notificationCounter.current
 
-    setNotificaciones((previas) => [...previas, { id, titulo, mensaje, tipo }])
+    setNotifications((previous) => [...previous, { id, title, message, type }])
 
     window.setTimeout(() => {
-      setNotificaciones((previas) => previas.filter((notificacion) => notificacion.id !== id))
+      setNotifications((previous) => previous.filter((notification) => notification.id !== id))
     }, 6000)
   }, [])
 
   /**
-   * Recarga el resumen del dashboard desde la API.
+   * Reloads the dashboard summary from the API.
    *
    * @author Fanny Mayorga
    * @date   16-09-2026
    */
-  const refrescar = useCallback(async (): Promise<void> => {
+  const refresh = useCallback(async (): Promise<void> => {
     try {
-      const resumen = await obtenerResumenDashboard()
+      const summary = await fetchDashboardSummary()
 
-      setDatos(resumen)
+      setData(summary)
       setError(null)
-    } catch (motivo) {
-      const detalle = motivo instanceof Error ? motivo.message : 'Error desconocido'
+    } catch (reason) {
+      const detail = reason instanceof Error ? reason.message : 'Unknown error'
 
-      setError(detalle)
+      setError(detail)
     } finally {
-      setCargando(false)
+      setLoading(false)
     }
   }, [])
 
   /**
-   * Manejador del evento WebSocket "evaluacion.procesada": notifica la alerta
-   * (o el resultado) y refresca el dashboard con los datos confirmados.
+   * Handler of the WebSocket "evaluacion.procesada" event: notifies the alert
+   * (or the result) and refreshes the dashboard with the confirmed data.
    *
    * @author Fanny Mayorga
    * @date   16-09-2026
    */
-  const manejarEvento = useCallback(
-    (evento: EventoEvaluacionProcesada): void => {
-      if (evento.alerted) {
-        agregarNotificacion(
+  const handleEvent = useCallback(
+    (event: EvaluationProcessedEvent): void => {
+      if (event.alerted) {
+        addNotification(
           t('dashboard.new_alert_title'),
-          t('dashboard.new_alert_message', { name: evento.student, area: evento.area }),
+          t('dashboard.new_alert_message', { name: event.student, area: event.area }),
           'alerta',
         )
-        reproducirSonidoAlerta()
+        playAlertSound()
       } else {
-        agregarNotificacion(
+        addNotification(
           t('dashboard.eval_ok_title'),
-          t('dashboard.eval_ok_message', { name: evento.student, score: evento.score }),
+          t('dashboard.eval_ok_message', { name: event.student, score: event.score }),
           'info',
         )
       }
 
-      void refrescar()
+      void refresh()
     },
-    [agregarNotificacion, refrescar, t],
+    [addNotification, refresh, t],
   )
 
   useEffect(() => {
-    let activo = true
+    let mounted = true
 
-    obtenerResumenDashboard()
-      .then((resumen) => {
-        if (activo) {
-          setDatos(resumen)
-          setCargando(false)
+    fetchDashboardSummary()
+      .then((summary) => {
+        if (mounted) {
+          setData(summary)
+          setLoading(false)
         }
       })
-      .catch((motivo: Error) => {
-        if (activo) {
-          setError(motivo.message)
-          setCargando(false)
+      .catch((reason: Error) => {
+        if (mounted) {
+          setError(reason.message)
+          setLoading(false)
         }
       })
 
-    const canal = echo.channel('evaluaciones')
-    canal.listen('.evaluacion.procesada', manejarEvento)
+    const channel = echo.channel('evaluaciones')
+    channel.listen('.evaluacion.procesada', handleEvent)
 
     return () => {
-      activo = false
-      canal.stopListening('.evaluacion.procesada')
+      mounted = false
+      channel.stopListening('.evaluacion.procesada')
     }
-  }, [manejarEvento])
+  }, [handleEvent])
 
   /**
-   * Ejecuta una evaluación de ejemplo sobre datos sembrados y refresca el
-   * dashboard; el WebSocket, si está conectado, confirma el evento al instante.
+   * Runs a sample evaluation against seeded data and refreshes the dashboard;
+   * the WebSocket, when connected, confirms the event instantly.
    *
    * @author Fanny Mayorga
    * @date   16-09-2026
    */
-  const procesarDemostracion = useCallback(async (): Promise<void> => {
-    setProcesando(true)
+  const runDemo = useCallback(async (): Promise<void> => {
+    setProcessing(true)
 
     try {
-      const payload = await payloadDeDemostracion()
-      const resultado: EvaluacionResultado = await evaluarYAsignarCronograma(payload)
+      const payload = await buildDemoPayload()
+      const result: EvaluationResult = await submitEvaluation(payload)
 
-      if (resultado.alerted) {
-        agregarNotificacion(
+      if (result.alerted) {
+        addNotification(
           t('dashboard.eval_alert_title'),
-          t('dashboard.eval_alert_message', { score: resultado.score, threshold: resultado.threshold }),
+          t('dashboard.eval_alert_message', { score: result.score, threshold: result.threshold }),
           'alerta',
         )
-        reproducirSonidoAlerta()
+        playAlertSound()
       } else {
-        agregarNotificacion(
+        addNotification(
           t('dashboard.eval_ok_title'),
-          t('dashboard.eval_ok_message', { name: t('dashboard.demo_subject'), score: resultado.score }),
+          t('dashboard.eval_ok_message', { name: t('dashboard.demo_subject'), score: result.score }),
           'info',
         )
       }
 
-      await refrescar()
-    } catch (motivo) {
-      const detalle = motivo instanceof Error ? motivo.message : 'Error desconocido'
+      await refresh()
+    } catch (reason) {
+      const detail = reason instanceof Error ? reason.message : 'Unknown error'
 
-      agregarNotificacion(t('dashboard.load_error'), detalle, 'info')
+      addNotification(t('dashboard.load_error'), detail, 'info')
     } finally {
-      setProcesando(false)
+      setProcessing(false)
     }
-  }, [agregarNotificacion, refrescar, t])
+  }, [addNotification, refresh, t])
 
   /**
-   * Simula la apertura de la ficha de un estudiante.
+   * Simulates opening the record of a student.
    *
    * @author Fanny Mayorga
    * @date   16-09-2026
    */
-  const verFicha = useCallback(
-    (estudiante: EstudianteResumen): void => {
-      agregarNotificacion(t('dashboard.title'), t('dashboard.ficha_toast', { name: estudiante.full_name }), 'info')
+  const openStudent = useCallback(
+    (student: StudentSummary): void => {
+      addNotification(t('dashboard.title'), t('dashboard.ficha_toast', { name: student.full_name }), 'info')
     },
-    [agregarNotificacion, t],
+    [addNotification, t],
   )
 
   return (
     <section className="space-y-6" aria-label={t('dashboard.title')}>
-      {/* Encabezado del dashboard */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* Dashboard header */}
+      <div className="ed-page__encabezado">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900 dark:text-white">{t('dashboard.title')}</h1>
-          <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">{t('dashboard.subtitle')}</p>
+          <h1 className="ed-page__title">{t('dashboard.title')}</h1>
+          <p className="ed-page__subtitle">{t('dashboard.subtitle')}</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="ed-dash__acciones">
           <Button
             type="button"
-            onClick={() => void procesarDemostracion()}
-            disabled={procesando || cargando}
-            cargando={procesando}
+            onClick={() => void runDemo()}
+            disabled={processing || loading}
+            loading={processing}
           >
-            {procesando ? t('dashboard.processing') : (
+            {processing ? t('dashboard.processing') : (
               <>
                 <RefreshCw className="h-4 w-4" />
                 {t('dashboard.demo')}
@@ -266,37 +267,37 @@ export default function Dashboard() {
             )}
           </Button>
 
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300">
+          <div className="ed-dash__campana">
             <Bell className="h-5 w-5" />
-            {notificaciones.length > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
-                {notificaciones.length}
+            {notifications.length > 0 && (
+              <span className="ed-dash__campana-badge">
+                {notifications.length}
               </span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Notificaciones flotantes */}
-      <div className="pointer-events-none fixed right-4 top-20 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2" aria-live="polite">
-        {notificaciones.map((notificacion) => (
+      {/* Floating notifications */}
+      <div className="ed-dash__noif" aria-live="polite">
+        {notifications.map((notification) => (
           <div
-            key={notificacion.id}
-            className={`pointer-events-auto rounded-xl border p-3 shadow-lg backdrop-blur ${
-              notificacion.tipo === 'alerta'
-                ? 'border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-500/40 dark:bg-rose-950/80 dark:text-rose-100'
-                : 'border-stone-200 bg-white/90 text-stone-800 dark:border-stone-700 dark:bg-stone-800/90 dark:text-stone-100'
+            key={notification.id}
+            className={`ed-dash__noif-item ${
+              notification.type === 'alerta'
+                ? 'ed-dash__noif-item--alerta'
+                : 'ed-dash__noif-item--info'
             }`}
           >
-            <div className="flex items-start gap-2">
-              {notificacion.tipo === 'alerta' ? (
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="ed-dash__noif-fila">
+              {notification.type === 'alerta' ? (
+                <AlertTriangle className="ed-dash__noif-icono" />
               ) : (
-                <Bell className="mt-0.5 h-4 w-4 shrink-0" />
+                <Bell className="ed-dash__noif-icono" />
               )}
-              <div className="min-w-0">
-                <p className="text-sm font-semibold">{notificacion.titulo}</p>
-                <p className="mt-0.5 text-xs opacity-90">{notificacion.mensaje}</p>
+              <div className="ed-dash__noif-contenido">
+                <p className="ed-dash__noif-titulo">{notification.title}</p>
+                <p className="ed-dash__noif-mensaje">{notification.message}</p>
               </div>
             </div>
           </div>
@@ -304,88 +305,88 @@ export default function Dashboard() {
       </div>
 
       {error !== null && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700 dark:border-rose-500/40 dark:bg-rose-950/60 dark:text-rose-300">
+        <div className="ed-banner ed-banner--error">
           {error}
         </div>
       )}
 
-      {/* Tarjetas KPI */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* KPI cards */}
+      <div className="ed-dash__kpis">
         <KpiCard
-          titulo={t('dashboard.total_surveys')}
-          valor={datos?.evaluated_students ?? 0}
-          icono={Users}
-          acento="bg-primary-500"
-          cargando={cargando}
+          title={t('dashboard.total_surveys')}
+          value={data?.evaluated_students ?? 0}
+          icon={Users}
+          accent="bg-primary-500"
+          loading={loading}
         />
         <KpiCard
-          titulo={t('dashboard.active_alerts')}
-          valor={datos?.active_alerts ?? 0}
-          icono={AlertTriangle}
-          acento="bg-rose-500"
-          cargando={cargando}
+          title={t('dashboard.active_alerts')}
+          value={data?.active_alerts ?? 0}
+          icon={AlertTriangle}
+          accent="bg-rose-500"
+          loading={loading}
         />
         <KpiCard
-          titulo={t('dashboard.upcoming_activities')}
-          valor={datos?.pending_sessions_today ?? 0}
-          icono={CalendarCheck2}
-          acento="bg-emerald-500"
-          cargando={cargando}
+          title={t('dashboard.upcoming_activities')}
+          value={data?.pending_sessions_today ?? 0}
+          icon={CalendarCheck2}
+          accent="bg-emerald-500"
+          loading={loading}
         />
       </div>
 
-      {/* Tabla de estudiantes evaluados */}
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-700 dark:bg-stone-800">
+      {/* Evaluated students table */}
+      <div className="ed-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-stone-200 text-sm dark:divide-stone-700">
-            <thead className="bg-stone-50 dark:bg-stone-900">
+          <table className="ed-table">
+            <thead className="ed-table__thead">
               <tr>
-                {(['name', 'grade', 'alert', 'progress', 'actions'] as const).map((columna) => (
+                {(['name', 'grade', 'alert', 'progress', 'actions'] as const).map((column) => (
                   <th
-                    key={columna}
+                    key={column}
                     scope="col"
-                    className="px-4 py-3 text-left font-semibold text-stone-600 dark:text-stone-300"
+                    className="ed-table__th"
                   >
-                    {t(`dashboard.table.${columna}`)}
+                    {t(`dashboard.table.${column}`)}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-200 dark:divide-stone-700">
-              {cargando ? (
-                Array.from({ length: 4 }).map((_, indice) => (
-                  <tr key={indice}>
-                    {Array.from({ length: 5 }).map((__, celda) => (
-                      <td key={celda} className="px-4 py-3">
-                        <div className="h-4 animate-pulse rounded-md bg-stone-200 dark:bg-stone-700" />
+            <tbody>
+              {loading ? (
+                Array.from({ length: 4 }).map((_, index) => (
+                  <tr key={index}>
+                    {Array.from({ length: 5 }).map((__, cell) => (
+                      <td key={cell} className="ed-cargando">
+                        <div className="ed-skeleton" />
                       </td>
                     ))}
                   </tr>
                 ))
-              ) : (datos?.students.length ?? 0) === 0 ? (
+              ) : (data?.students.length ?? 0) === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-stone-500 dark:text-stone-400">
+                  <td colSpan={5} className="ed-vacio">
                     {t('dashboard.table.empty')}
                   </td>
                 </tr>
               ) : (
-                (datos?.students ?? []).map((estudiante) => {
-                  const estilos = estilosAlerta(estudiante.last_area)
+                (data?.students ?? []).map((student) => {
+                  const styles = alertStyles(student.last_area)
 
                   return (
-                    <tr key={estudiante.id} className="hover:bg-stone-50 dark:hover:bg-stone-700/40">
-                      <td className="px-4 py-3 font-medium text-stone-900 dark:text-white">
-                        {estudiante.full_name}
+                    <tr key={student.id} className="ed-table__row">
+                      <td className="ed-table__td ed-table__resalto">
+                        {student.full_name}
                       </td>
-                      <td className="px-4 py-3 text-stone-600 dark:text-stone-300">
-                        {estudiante.grade ?? estudiante.document_number ?? '—'}
+                      <td className="ed-table__td ed-table__secundario">
+                        {student.grade ?? student.document_number ?? '—'}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${estilos.badge}`}>
-                          {estudiante.alerted && estudiante.area_label !== null ? (
+                      <td className="ed-table__td">
+                        <span className={`ed-badge ${styles.badge}`}>
+                          {student.alerted && student.area_label !== null ? (
                             <>
                               <AlertTriangle className="h-3.5 w-3.5" />
-                              {estudiante.area_label}
+                              {student.area_label}
                             </>
                           ) : (
                             <>
@@ -395,24 +396,24 @@ export default function Dashboard() {
                           )}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="h-2 w-full max-w-32 overflow-hidden rounded-full bg-stone-200 dark:bg-stone-700">
+                      <td className="ed-table__td">
+                        <div className="ed-dash__fila">
+                          <div className="ed-dash__progreso">
                             <div
-                              className={`h-2 rounded-full ${estilos.barra} transition-all duration-500`}
-                              style={{ width: `${estudiante.score}%` }}
+                              className={`ed-dash__progreso-barra ${styles.barra}`}
+                              style={{ width: `${student.score}%` }}
                             />
                           </div>
-                          <span className="text-xs font-semibold text-stone-600 dark:text-stone-300">
-                            {estudiante.score}%
+                          <span className="ed-dash__progreso-valor">
+                            {student.score}%
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="ed-table__td">
                         <button
                           type="button"
-                          onClick={() => verFicha(estudiante)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-primary-200 bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700 transition hover:bg-primary-100 dark:border-primary-500/40 dark:bg-primary-500/10 dark:text-primary-300 dark:hover:bg-primary-500/20"
+                          onClick={() => openStudent(student)}
+                          className="ed-accion-texto"
                         >
                           <FileText className="h-3.5 w-3.5" />
                           {t('dashboard.view_file')}

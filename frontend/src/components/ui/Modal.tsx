@@ -3,68 +3,65 @@ import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
 
 /**
- * Modal base del kit UI de EduSense: overlay, cierre por fondo/Escape y panel
- * con cabecera. El contenido queda a cargo de la página que lo usa.
+ * Base modal of the EduSense UI kit: overlay, close on backdrop/Escape and a
+ * panel with a header. The content is owned by the page that uses it.
  *
  * @author Fanny Mayorga
+ * @date   26-09-2026
  */
 
 interface ModalProps {
-  abierto: boolean
-  onCerrar: () => void
-  titulo: string
+  open: boolean
+  onClose: () => void
+  title: string
+  size?: 'md' | 'lg' | 'xl' | 'wide'
   children: ReactNode
 }
 
-export default function Modal({ abierto, onCerrar, titulo, children }: ModalProps) {
+export default function Modal({ open, onClose, title, size = 'md', children }: ModalProps) {
   useEffect(() => {
-    if (!abierto) {
+    if (!open) {
       return
     }
 
-    const manejarEscape = (evento: KeyboardEvent): void => {
-      if (evento.key === 'Escape') {
-        onCerrar()
+    const handleEscape = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        onClose()
       }
     }
 
-    window.addEventListener('keydown', manejarEscape)
+    window.addEventListener('keydown', handleEscape)
     document.body.style.overflow = 'hidden'
 
     return () => {
-      window.removeEventListener('keydown', manejarEscape)
+      window.removeEventListener('keydown', handleEscape)
       document.body.style.overflow = ''
     }
-  }, [abierto, onCerrar])
+  }, [open, onClose])
 
-  if (!abierto) {
+  if (!open) {
     return null
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={titulo}
-    >
-      <div className="absolute inset-0 bg-black/50" onClick={onCerrar} aria-hidden="true" />
+    <div className="ed-modal__overlay" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="ed-modal__fondo" onClick={onClose} aria-hidden="true" />
 
-      <div className="relative w-full max-w-lg rounded-2xl border border-stone-200 bg-white shadow-xl dark:border-stone-700 dark:bg-stone-800">
-        <div className="flex items-center justify-between gap-4 border-b border-stone-200 px-5 py-4 dark:border-stone-700">
-          <h2 className="text-lg font-bold text-stone-900 dark:text-white">{titulo}</h2>
+      <div className={`ed-modal__panel ed-modal__panel--${size}`}>
+        <div className="ed-modal__header">
+          <h2 className="ed-modal__title">{title}</h2>
           <button
             type="button"
-            onClick={onCerrar}
-            title="Cerrar"
-            aria-label="Cerrar"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-stone-500 transition hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-700"
+            onClick={onClose}
+            title="Close"
+            aria-label="Close"
+            className="ed-modal__close"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="max-h-[70vh] overflow-y-auto p-5">{children}</div>
+        <div className="ed-modal__body">{children}</div>
       </div>
     </div>
   )

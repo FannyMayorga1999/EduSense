@@ -25,9 +25,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $first_name
  * @property string $last_name
  * @property string|null $document_number
+ * @property string|null $document_type
+ * @property string|null $gender
+ * @property string|null $laterality
+ * @property string|null $medical_conditions
  */
-#[Fillable(['first_name', 'last_name', 'birth_date', 'document_number', 'tutor_id', 'is_active'])]
-#[Appends(['full_name'])]
+#[Fillable(['first_name', 'last_name', 'birth_date', 'document_number', 'document_type', 'gender', 'representative_name', 'representative_relation', 'contact_phone', 'contact_email', 'home_address', 'laterality', 'medical_conditions', 'tutor_id', 'is_active'])]
+#[Appends(['full_name', 'academic_status'])]
 class Student extends Model
 {
     /** @use HasFactory<StudentFactory> */
@@ -114,7 +118,7 @@ class Student extends Model
     }
 
     /**
-     * The observation logs (bitácora) of the student.
+     * The observation logs of the student.
      *
      * @return HasMany<ObservationLog, $this>
      */
@@ -141,5 +145,25 @@ class Student extends Model
     protected function fullName(): Attribute
     {
         return Attribute::get(fn (): string => trim("{$this->first_name} {$this->last_name}"));
+    }
+
+    /**
+     * Derived academic status of the student.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function academicStatus(): Attribute
+    {
+        return Attribute::get(function (): string {
+            if (! $this->is_active) {
+                return 'inactive';
+            }
+
+            return match ($this->enrollments->first()?->status) {
+                'completed' => 'graduated',
+                'retired' => 'retired',
+                default => 'active',
+            };
+        });
     }
 }

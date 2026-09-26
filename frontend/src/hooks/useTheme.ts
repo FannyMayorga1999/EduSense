@@ -1,29 +1,30 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Hook que gestiona el modo claro/oscuro y lo persiste en localStorage.
- * Lo comparten la página de login y el shell autenticado.
+ * Hook that manages the light/dark mode and persists it in localStorage.
+ * Shared between the login page and the authenticated shell.
  *
  * @author Fanny Mayorga
+ * @date   26-09-2026
  */
-export function useModoOscuro(): { oscuro: boolean; alternar: () => void } {
-  const [oscuro, setOscuro] = useState<boolean>(() => {
-    const guardado = window.localStorage.getItem('edusense-theme')
+export function useDarkMode(): { dark: boolean; toggle: () => void } {
+  const [dark, setDark] = useState<boolean>(() => {
+    const saved = window.localStorage.getItem('edusense-theme')
 
-    if (guardado !== null) {
-      return guardado === 'dark'
+    if (saved !== null) {
+      return saved === 'dark'
     }
 
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
   })
 
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', oscuro)
-    window.localStorage.setItem('edusense-theme', oscuro ? 'dark' : 'light')
-  }, [oscuro])
+    document.documentElement.classList.toggle('dark', dark)
+    window.localStorage.setItem('edusense-theme', dark ? 'dark' : 'light')
+  }, [dark])
 
   return {
-    oscuro,
-    alternar: () => setOscuro((previo) => !previo),
+    dark,
+    toggle: () => setDark((prev) => !prev),
   }
 }

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Observation history entry (bitácora) of a student.
+ * Observation history entry of a student.
  *
  * @property string $observation
  */

@@ -10,12 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Enrollment (matrícula) of a student in a course for a term.
+ * Enrollment of a student in a course for a term.
  *
  * @property string $status
+ * @property string|null $parallel
  * @property string|null $enrolled_at
  */
-#[Fillable(['student_id', 'course_id', 'term_id', 'status', 'enrolled_at'])]
+#[Fillable(['student_id', 'course_id', 'term_id', 'status', 'parallel', 'enrolled_at'])]
 class Enrollment extends Model
 {
     /** @use HasFactory<EnrollmentFactory> */

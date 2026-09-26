@@ -7,9 +7,18 @@
       "light_mode": "Modo claro",
       "language": "Idioma"
     },
+    "pagination": {
+      "per_page": "Registros por página",
+      "range": "{{from}}–{{to}} de {{total}}",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "page": "Ir a la página {{numero}}",
+      "navigation": "Paginación"
+    },
     "menu": {
       "dashboard": "Panel",
       "students": "Estudiantes",
+      "terms": "Años lectivos",
       "surveys": "Encuestas",
       "schedule": "Cronograma"
     },
@@ -111,11 +120,6 @@
         "actions": "Acciones",
         "empty": "No hay estudiantes que coincidan con los filtros"
       },
-      "pagination": {
-        "page": "Página {{actual}} de {{total}}",
-        "previous": "Anterior",
-        "next": "Siguiente"
-      },
       "actions": {
         "edit": "Editar estudiante",
         "deactivate": "Desactivar estudiante",
@@ -129,7 +133,54 @@
         "document_number": "Número de documento",
         "document_hint": "Verificación de identidad de 7 a 10 dígitos.",
         "birth_date": "Fecha de nacimiento",
-        "is_active": "Estudiante activo",
+        "document_type": "Tipo de documento",
+        "document_type_cedula": "Cédula",
+        "document_type_pasaporte": "Pasaporte",
+        "document_type_dni": "DNI",
+        "gender": "Género",
+        "gender_male": "Masculino",
+        "gender_female": "Femenino",
+        "gender_other": "Otro",
+        "required": "Campo obligatorio.",
+        "email_invalid": "Correo electrónico no válido.",
+        "enroll_incomplete": "Para registrar la información académica elige el curso y el período.",
+        "course": "Nivel / grado / curso",
+        "course_placeholder": "Selecciona un curso",
+        "parallel": "Paralelo",
+        "termino": "Período lectivo",
+        "termino_placeholder": "Selecciona un período",
+        "academic_status": "Estado académico",
+        "academic_status_active": "Activo",
+        "academic_status_inactive": "Baja lógica",
+        "academic_status_graduated": "Graduado",
+        "academic_status_retired": "Retirado",
+        "representative_name": "Nombre del representante",
+        "representative_relation": "Parentesco",
+        "representative_relation_placeholder": "Padre, madre, tutor...",
+        "contact_phone": "Teléfono de contacto",
+        "contact_email": "Correo electrónico",
+        "home_address": "Dirección de domicilio",
+        "laterality": "Lateralidad",
+        "laterality_right": "Diestro (derecha)",
+        "laterality_left": "Zurdo (izquierda)",
+        "laterality_ambidextrous": "Ambidiestro",
+        "medical_conditions": "Condiciones médicas o diagnósticos previos",
+        "medical_conditions_placeholder": "Describe alergias, diagnósticos, tratamientos u observaciones de salud...",
+        "placeholder_select": "Selecciona una opción",
+        "section_identification": "Datos de identificación",
+        "section_academic": "Información académica actual",
+        "section_contact": "Datos de contacto y representante legal",
+        "section_health": "Información fisiológica y salud",
+        "wizard_step_1": "Identificación",
+        "wizard_step_2": "Académica",
+        "wizard_step_3": "Contacto",
+        "wizard_step_4": "Salud",
+        "wizard_label": "Progreso del formulario",
+        "step_of": "Paso {{actual}} de {{total}}",
+        "next": "Continuar",
+        "previous": "Regresar",
+        "go_to": "Ir a:",
+        "is_active": "Activo en el sistema",
         "save": "Guardar",
         "saving": "Guardando..."
       },
@@ -176,6 +227,59 @@
         "reactivated": "Estudiante reactivado.",
         "export_error": "No se pudo generar la descarga. Intenta de nuevo.",
         "load_error": "No se pudieron cargar los estudiantes. Verifica el servidor.",
+        "error_generic": "Ocurrió un error. Intenta de nuevo."
+      }
+    },
+    "periods": {
+      "title": "Años lectivos",
+      "subtitle": "Administra el catálogo de períodos académicos del sistema.",
+      "legend": "El período vigente se usa como año lectivo actual en matrículas y evaluaciones.",
+      "new": "Nuevo año lectivo",
+      "status": {
+        "current": "Vigente",
+        "not_current": "No vigente"
+      },
+      "table": {
+        "name": "Período",
+        "start": "Inicio",
+        "end": "Fin",
+        "status": "Estado",
+        "matches": "Matrículas",
+        "actions": "Acciones",
+        "empty": "No hay períodos lectivos registrados."
+      },
+      "actions": {
+        "edit": "Editar período",
+        "delete": "Eliminar período",
+        "set_current": "Marcar como vigente"
+      },
+      "form": {
+        "title_create": "Nuevo año lectivo",
+        "title_edit": "Editar año lectivo",
+        "name": "Nombre del período",
+        "start_date": "Fecha de inicio",
+        "end_date": "Fecha de fin",
+        "is_current": "Marcar como vigente",
+        "is_current_help": "Si marcas esta casilla, este período quedará como el año lectivo actual (solo puede haber uno vigente).",
+        "required": "Este campo es obligatorio.",
+        "end_after_start": "La fecha de fin debe ser igual o posterior al inicio.",
+        "save": "Guardar",
+        "saving": "Guardando..."
+      },
+      "confirm": {
+        "delete_title": "Eliminar año lectivo",
+        "delete_message": "¿Eliminar el período {{name}}? Esta acción no se puede deshacer.",
+        "cancel": "Cancelar",
+        "confirm": "Eliminar",
+        "executing": "Procesando..."
+      },
+      "messages": {
+        "created": "Período {{name}} creado correctamente.",
+        "updated": "Período {{name}} actualizado correctamente.",
+        "deleted": "Período {{name}} eliminado.",
+        "current_set": "{{name}} quedó marcado como período vigente.",
+        "delete_blocked": "No se puede eliminar un período con matrículas o notas asociadas.",
+        "load_error": "No se pudieron cargar los años lectivos. Verifica el servidor.",
         "error_generic": "Ocurrió un error. Intenta de nuevo."
       }
     }

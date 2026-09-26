@@ -17,11 +17,13 @@ class PermissionController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $permissions = Permission::query()
-            ->orderBy('module')
-            ->orderBy('name')
-            ->when($request->boolean('grouped'), fn ($query) => $query->get()->groupBy('module'))
-            ->when(! $request->boolean('grouped'), fn ($query) => $query->paginate($request->integer('per_page', 100)));
+        $permissions = $request->boolean('grouped')
+            ? Permission::query()->orderBy('module')->orderBy('name')->get()->groupBy('module')
+            : $this->paginateQuery(
+                $request,
+                Permission::query()->orderBy('module')->orderBy('name'),
+                100
+            );
 
         return $this->success($permissions);
     }

@@ -22,14 +22,16 @@ class UserController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $users = User::query()
-            ->with('roles:id,name,slug')
-            ->when($request->string('search')->toString(), fn ($query, $search) => $query
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%"))
-            ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
-            ->orderByDesc('id')
-            ->paginate($request->integer('per_page', 15));
+        $users = $this->paginateQuery(
+            $request,
+            User::query()
+                ->with('roles:id,name,slug')
+                ->when($request->string('search')->toString(), fn ($query, $search) => $query
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%"))
+                ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
+                ->orderByDesc('id')
+        );
 
         return $this->success($users);
     }

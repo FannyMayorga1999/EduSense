@@ -21,13 +21,16 @@ class AttendanceController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $records = Attendance::query()
-            ->with(['student:id,first_name,last_name', 'subject:id,name'])
-            ->when($request->filled('attendance_date'), fn ($query) => $query->where('attendance_date', $request->string('attendance_date')->toString()))
-            ->when($request->filled('subject_id'), fn ($query) => $query->where('subject_id', $request->integer('subject_id')))
-            ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
-            ->orderByDesc('attendance_date')
-            ->paginate($request->integer('per_page', 25));
+        $records = $this->paginateQuery(
+            $request,
+            Attendance::query()
+                ->with(['student:id,first_name,last_name', 'subject:id,name'])
+                ->when($request->filled('attendance_date'), fn ($query) => $query->where('attendance_date', $request->string('attendance_date')->toString()))
+                ->when($request->filled('subject_id'), fn ($query) => $query->where('subject_id', $request->integer('subject_id')))
+                ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
+                ->orderByDesc('attendance_date'),
+            25
+        );
 
         return $this->success($records);
     }

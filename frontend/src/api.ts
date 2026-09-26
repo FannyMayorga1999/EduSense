@@ -1,19 +1,22 @@
 import axios from 'axios'
 import type {
+  AcademicResource,
+  AcademicTerm,
   DashboardData,
-  Estudiante,
-  EstudianteForm,
-  EstudianteLista,
-  EvaluacionResultado,
-  EvaluarPayload,
-  FiltrosEstudiantes,
-  Paginador,
-  RecursoAcademico,
-  ResultadoImport,
+  EvaluatePayload,
+  EvaluationResult,
+  ImportResult,
+  Paginator,
+  Student,
+  StudentDetail,
+  StudentForm,
+  StudentFilters,
+  StudentListItem,
+  TermForm,
 } from './types'
 
 /**
- * Cliente HTTP de la API de EduSense (Sanctum SPA con cookies).
+ * HTTP client of the EduSense API (Sanctum SPA with cookies).
  *
  * @author Fanny Mayorga
  * @date   16-09-2026
@@ -27,124 +30,134 @@ export const api = axios.create({
 })
 
 /**
- * Solicita la cookie CSRF de Sanctum. Debe ejecutarse antes del primer
- * envío de formulario (login) para que axios adjunte X-XSRF-TOKEN.
+ * Requests the Sanctum CSRF cookie. It must run before the first form
+ * submission (login) so axios attaches the X-XSRF-TOKEN header.
  */
-export async function obtenerCsrf(): Promise<void> {
+export async function fetchCsrf(): Promise<void> {
   await api.get('/sanctum/csrf-cookie', { baseURL: '/' })
 }
 
 /**
- * Obtiene el resumen del dashboard (KPIs + última evaluación por estudiante).
+ * Fetches the dashboard summary (KPIs + latest evaluation per student).
  *
- * @returns Promesa con los datos del dashboard.
+ * @returns Promise with the dashboard data.
  * @author Fanny Mayorga
  * @date   16-09-2026
  */
-export async function obtenerResumenDashboard(): Promise<DashboardData> {
+export async function fetchDashboardSummary(): Promise<DashboardData> {
   const { data } = await api.get<{ data: DashboardData }>('/v1/dashboard/summary')
 
   return data.data
 }
 
 /**
- * Procesa una evaluación psicopedagógica y devuelve su puntaje.
+ * Processes a psychopedagogic evaluation and returns its score.
  *
- * @param payload Datos validados de la evaluación (estudiante + encuesta + respuestas).
- * @returns Promesa con el resultado estructurado de la evaluación.
+ * @param payload Validated evaluation data (student + survey + answers).
+ * @returns Promise with the structured evaluation result.
  * @author Fanny Mayorga
  * @date   16-09-2026
  */
-export async function evaluarYAsignarCronograma(payload: EvaluarPayload): Promise<EvaluacionResultado> {
-  const { data } = await api.post<{ data: EvaluacionResultado }>('/v1/psychopedagogic/evaluations', payload)
+export async function submitEvaluation(payload: EvaluatePayload): Promise<EvaluationResult> {
+  const { data } = await api.post<{ data: EvaluationResult }>('/v1/psychopedagogic/evaluations', payload)
 
   return data.data
 }
 
 /**
- * Lista paginada de estudiantes con filtros (search, estado, grado).
+ * Paginated students list with filters (search, status, grade).
  */
-export async function obtenerEstudiantes(filtros: FiltrosEstudiantes): Promise<Paginador<EstudianteLista>> {
-  const { data } = await api.get<{ data: Paginador<EstudianteLista> }>('/v1/students', { params: filtros })
+export async function fetchStudents(filters: StudentFilters): Promise<Paginator<StudentListItem>> {
+  const { data } = await api.get<{ data: Paginator<StudentListItem> }>('/v1/students', { params: filters })
 
   return data.data
 }
 
 /**
- * Crea un estudiante.
+ * Creates a student.
  */
-export async function crearEstudiante(payload: EstudianteForm): Promise<Estudiante> {
-  const { data } = await api.post<{ data: Estudiante }>('/v1/students', payload)
+export async function createStudent(payload: StudentForm): Promise<Student> {
+  const { data } = await api.post<{ data: Student }>('/v1/students', payload)
 
   return data.data
 }
 
 /**
- * Actualiza un estudiante.
+ * Updates a student (partial payload, same as the PUT endpoint).
  */
-export async function actualizarEstudiante(id: number, payload: EstudianteForm): Promise<Estudiante> {
-  const { data } = await api.put<{ data: Estudiante }>(`/v1/students/${id}`, payload)
+export async function updateStudent(id: number, payload: Partial<StudentForm>): Promise<Student> {
+  const { data } = await api.put<{ data: Student }>(`/v1/students/${id}`, payload)
 
   return data.data
 }
 
 /**
- * Desactiva un estudiante (baja lógica).
+ * Fetches the full detail of a student (with enrollments and health/contact
+ * data) to prefill the edit wizard.
  */
-export async function desactivarEstudiante(id: number): Promise<void> {
+export async function fetchStudent(id: number): Promise<StudentDetail> {
+  const { data } = await api.get<{ data: StudentDetail }>(`/v1/students/${id}`)
+
+  return data.data
+}
+
+/**
+ * Deactivates a student (soft delete).
+ */
+export async function deactivateStudent(id: number): Promise<void> {
   await api.delete(`/v1/students/${id}`)
 }
 
 /**
- * Sube un CSV masivo de estudiantes (opcionalmente los matricula).
+ * Uploads a bulk CSV of students (optionally enrolls them).
  */
-export async function importarEstudiantes(
-  archivo: File,
+export async function importStudents(
+  file: File,
   separator: string,
-  matricula?: { course_id: number; term_id: number },
-): Promise<ResultadoImport> {
+  enrollment?: { course_id: number; term_id: number },
+): Promise<ImportResult> {
   const formData = new FormData()
 
-  formData.append('file', archivo)
+  formData.append('file', file)
   formData.append('separator', separator)
 
-  if (matricula !== undefined) {
-    formData.append('course_id', String(matricula.course_id))
-    formData.append('term_id', String(matricula.term_id))
+  if (enrollment !== undefined) {
+    formData.append('course_id', String(enrollment.course_id))
+    formData.append('term_id', String(enrollment.term_id))
   }
 
-  const { data } = await api.post<{ data: ResultadoImport }>('/v1/students/import', formData)
+  const { data } = await api.post<{ data: ImportResult }>('/v1/students/import', formData)
 
   return data.data
 }
 
 /**
- * Descarga el listado filtrado de estudiantes como CSV o XLSX.
+ * Downloads the filtered students list as CSV or XLSX.
  */
-export async function exportarEstudiantes(filtros: FiltrosEstudiantes, formato: 'csv' | 'xlsx'): Promise<void> {
+export async function exportStudents(filters: StudentFilters, format: 'csv' | 'xlsx'): Promise<void> {
   const { data } = await api.get('/v1/students/export', {
-    params: { ...filtros, format: formato },
+    params: { ...filters, format },
     responseType: 'blob',
   })
 
   const blob = data instanceof Blob ? data : new Blob([data as BlobPart])
   const url = URL.createObjectURL(blob)
-  const marca = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')
-  const enlace = document.createElement('a')
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')
+  const link = document.createElement('a')
 
-  enlace.href = url
-  enlace.download = `estudiantes_${marca}.${formato}`
-  document.body.appendChild(enlace)
-  enlace.click()
-  enlace.remove()
+  link.href = url
+  link.download = `estudiantes_${stamp}.${format}`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
   URL.revokeObjectURL(url)
 }
 
 /**
- * Catálogo de cursos (para el filtro de grado y la matrícula del import).
+ * Courses catalog (for the grade filter and the import enrollment).
  */
-export async function obtenerCursos(): Promise<RecursoAcademico[]> {
-  const { data } = await api.get<{ data: Paginador<RecursoAcademico> }>('/v1/academic/courses', {
+export async function fetchCourses(): Promise<AcademicResource[]> {
+  const { data } = await api.get<{ data: Paginator<AcademicResource> }>('/v1/academic/courses', {
     params: { per_page: 100 },
   })
 
@@ -152,20 +165,58 @@ export async function obtenerCursos(): Promise<RecursoAcademico[]> {
 }
 
 /**
- * Catálogo de períodos académicos (para la matrícula del import).
+ * Academic terms catalog. By default only returns the current term; pass
+ * `false` to list all (wizard selector).
  */
-export async function obtenerTerminos(): Promise<RecursoAcademico[]> {
-  const { data } = await api.get<{ data: Paginador<RecursoAcademico> }>('/v1/academic/terms', {
-    params: { current_only: 1 },
+export async function fetchTerms(currentOnly = true): Promise<AcademicResource[]> {
+  const { data } = await api.get<{ data: Paginator<AcademicResource> }>('/v1/academic/terms', {
+    params: { current_only: currentOnly ? 1 : 0 },
   })
 
   return data.data.data
 }
 
 /**
- * Encuesta de un área con sus preguntas.
+ * Paginated academic terms for the administration catalog.
  */
-interface Encuesta {
+export async function fetchTermsPaginated(page = 1, perPage = 15): Promise<Paginator<AcademicTerm>> {
+  const { data } = await api.get<{ data: Paginator<AcademicTerm> }>('/v1/academic/terms', {
+    params: { page, per_page: perPage },
+  })
+
+  return data.data
+}
+
+/**
+ * Creates an academic term.
+ */
+export async function createTerm(payload: TermForm): Promise<AcademicTerm> {
+  const { data } = await api.post<{ data: AcademicTerm }>('/v1/academic/terms', payload)
+
+  return data.data
+}
+
+/**
+ * Updates an academic term (partial payload, same as the PUT endpoint).
+ */
+export async function updateTerm(id: number, payload: Partial<TermForm>): Promise<AcademicTerm> {
+  const { data } = await api.put<{ data: AcademicTerm }>(`/v1/academic/terms/${id}`, payload)
+
+  return data.data
+}
+
+/**
+ * Deletes an academic term. The backend returns 422 if it has enrollments or
+ * grades associated.
+ */
+export async function deleteTerm(id: number): Promise<void> {
+  await api.delete(`/v1/academic/terms/${id}`)
+}
+
+/**
+ * Survey of an area with its questions.
+ */
+interface Survey {
   id: number
   evaluation_area: string
   is_active: boolean
@@ -173,38 +224,37 @@ interface Encuesta {
 }
 
 /**
- * Construye un payload de demostración a partir de los datos sembrados:
- * evalúa a un estudiante real en el área de atención con puntajes altos
- * para disparar una alerta.
+ * Builds a demonstration payload from the seeded data: evaluates a real
+ * student in the attention area with high scores to trigger an alert.
  *
- * @returns Promise con el payload listo para el endpoint de evaluación.
+ * @returns Promise with the payload for the evaluation endpoint.
  * @author Fanny Mayorga
  * @date   16-09-2026
  */
-export async function payloadDeDemostracion(): Promise<EvaluarPayload> {
-  const [resumen, listado] = await Promise.all([
+export async function buildDemoPayload(): Promise<EvaluatePayload> {
+  const [summary, list] = await Promise.all([
     api.get<{ data: DashboardData }>('/v1/dashboard/summary'),
-    api.get<{ data: { data: Encuesta[] } }>('/v1/psychopedagogic/surveys', {
+    api.get<{ data: { data: Survey[] } }>('/v1/psychopedagogic/surveys', {
       params: { evaluation_area: 'attention', is_active: true },
     }),
   ])
 
-  const estudiante = resumen.data.data.students[0]
-  const encuesta = listado.data.data.data[0]
+  const student = summary.data.data.students[0]
+  const survey = list.data.data.data[0]
 
-  if (estudiante === undefined || encuesta === undefined) {
-    throw new Error('No hay datos de demostración: crea estudiantes y encuestas antes.')
+  if (student === undefined || survey === undefined) {
+    throw new Error('No demo data available: create students and surveys first.')
   }
 
-  const detalle = await api.get<{ data: Encuesta }>(`/v1/psychopedagogic/surveys/${encuesta.id}`)
+  const detail = await api.get<{ data: Survey }>(`/v1/psychopedagogic/surveys/${survey.id}`)
 
   const answers: Record<number, number> = Object.fromEntries(
-    detalle.data.data.questions.map((pregunta) => [pregunta.id, 5]),
+    detail.data.data.questions.map((question) => [question.id, 5]),
   )
 
   return {
-    student_id: estudiante.id,
-    survey_id: detalle.data.data.id,
+    student_id: student.id,
+    survey_id: detail.data.data.id,
     answers,
   }
 }

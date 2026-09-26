@@ -22,14 +22,16 @@ class SubjectController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $subjects = Subject::query()
-            ->with('course:id,name')
-            ->when($request->filled('course_id'), fn ($query) => $query->where('course_id', $request->integer('course_id')))
-            ->when($request->string('search')->toString(), fn ($query, $search) => $query
-                ->where('name', 'like', "%{$search}%")
-                ->orWhere('code', 'like', "%{$search}%"))
-            ->orderBy('name')
-            ->paginate($request->integer('per_page', 15));
+        $subjects = $this->paginateQuery(
+            $request,
+            Subject::query()
+                ->with('course:id,name')
+                ->when($request->filled('course_id'), fn ($query) => $query->where('course_id', $request->integer('course_id')))
+                ->when($request->string('search')->toString(), fn ($query, $search) => $query
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%"))
+                ->orderBy('name')
+        );
 
         return $this->success($subjects);
     }

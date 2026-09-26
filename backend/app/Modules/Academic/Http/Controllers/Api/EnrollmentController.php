@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * CRUD of enrollments (matrículas).
+ * CRUD of enrollments.
  */
 class EnrollmentController extends Controller
 {
@@ -22,13 +22,15 @@ class EnrollmentController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $enrollments = Enrollment::query()
-            ->with(['student:id,first_name,last_name,document_number', 'course:id,name', 'term:id,name'])
-            ->when($request->filled('term_id'), fn ($query) => $query->where('term_id', $request->integer('term_id')))
-            ->when($request->filled('course_id'), fn ($query) => $query->where('course_id', $request->integer('course_id')))
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
-            ->orderByDesc('created_at')
-            ->paginate($request->integer('per_page', 15));
+        $enrollments = $this->paginateQuery(
+            $request,
+            Enrollment::query()
+                ->with(['student:id,first_name,last_name,document_number', 'course:id,name', 'term:id,name'])
+                ->when($request->filled('term_id'), fn ($query) => $query->where('term_id', $request->integer('term_id')))
+                ->when($request->filled('course_id'), fn ($query) => $query->where('course_id', $request->integer('course_id')))
+                ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
+                ->orderByDesc('created_at')
+        );
 
         return $this->success($enrollments);
     }

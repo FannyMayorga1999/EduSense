@@ -9,10 +9,5 @@ import type { HTMLAttributes } from 'react'
 interface CardProps extends HTMLAttributes<HTMLDivElement> {}
 
 export default function Card({ className = '', ...props }: CardProps) {
-  return (
-    <div
-      className={`rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-700 dark:bg-stone-800 ${className}`}
-      {...props}
-    />
-  )
+  return <div className={`ed-card ${className}`} {...props} />
 }

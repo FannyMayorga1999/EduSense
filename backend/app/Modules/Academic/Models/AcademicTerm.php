@@ -48,7 +48,7 @@ class AcademicTerm extends Model
      */
     public function enrollments(): HasMany
     {
-        return $this->hasMany(Enrollment::class);
+        return $this->hasMany(Enrollment::class, 'term_id');
     }
 
     /**
@@ -58,6 +58,6 @@ class AcademicTerm extends Model
      */
     public function grades(): HasMany
     {
-        return $this->hasMany(Grade::class);
+        return $this->hasMany(Grade::class, 'term_id');
     }
 }

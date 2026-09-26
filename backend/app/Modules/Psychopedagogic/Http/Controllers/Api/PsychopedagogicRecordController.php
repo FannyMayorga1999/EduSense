@@ -22,12 +22,14 @@ class PsychopedagogicRecordController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $records = PsychopedagogicRecord::query()
-            ->with(['student:id,first_name,last_name', 'registrar:id,name'])
-            ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
-            ->when($request->string('search')->toString(), fn ($query, $search) => $query->where('title', 'like', "%{$search}%"))
-            ->orderByDesc('recorded_at')
-            ->paginate($request->integer('per_page', 15));
+        $records = $this->paginateQuery(
+            $request,
+            PsychopedagogicRecord::query()
+                ->with(['student:id,first_name,last_name', 'registrar:id,name'])
+                ->when($request->filled('student_id'), fn ($query) => $query->where('student_id', $request->integer('student_id')))
+                ->when($request->string('search')->toString(), fn ($query, $search) => $query->where('title', 'like', "%{$search}%"))
+                ->orderByDesc('recorded_at')
+        );
 
         return $this->success($records);
     }

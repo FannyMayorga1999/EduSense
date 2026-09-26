@@ -23,12 +23,14 @@ class SurveyController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $surveys = Survey::query()
-            ->withCount('questions')
-            ->when($request->filled('evaluation_area'), fn ($query) => $query->where('evaluation_area', $request->string('evaluation_area')->toString()))
-            ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
-            ->orderBy('title')
-            ->paginate($request->integer('per_page', 15));
+        $surveys = $this->paginateQuery(
+            $request,
+            Survey::query()
+                ->withCount('questions')
+                ->when($request->filled('evaluation_area'), fn ($query) => $query->where('evaluation_area', $request->string('evaluation_area')->toString()))
+                ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
+                ->orderBy('title')
+        );
 
         return $this->success($surveys);
     }
