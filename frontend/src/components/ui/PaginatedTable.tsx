@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import type { Paginator } from '../../types'
-import Pagination from './Pagination'
+import type { Paginator } from '@/types'
+import Pagination from '@/components/ui/Pagination'
 
 /**
  * Global paginated table of the EduSense UI kit: wraps the card, the toolbar

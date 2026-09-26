@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Paginator } from '../types'
+import type { Paginator } from '@/types'
 
 /**
  * Reusable state and logic for paginated listings against the EduSense API.

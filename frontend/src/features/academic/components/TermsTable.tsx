@@ -1,199 +1,62 @@
-import { useCallback, useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { isAxiosError } from 'axios'
 import { CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react'
-import { useAuth } from '../../auth/AuthContext'
-import { createTerm, deleteTerm, fetchTermsPaginated, updateTerm } from '../../api'
-import type { AcademicTerm, TermForm } from '../../types'
-import Button from '../ui/Button'
-import Input from '../ui/Input'
-import Field from '../ui/Field'
-import Badge from '../ui/Badge'
-import Modal from '../ui/Modal'
-import PaginatedTable from '../ui/PaginatedTable'
-import usePagination from '../../hooks/usePagination'
+import type { useTerms } from '@/features/academic/hooks/useTerms'
+import { formatDate } from '@/utils/format'
+import type { AcademicTerm } from '@/types'
+import Button from '@/components/ui/Button'
+import Input from '@/components/ui/Input'
+import Field from '@/components/ui/Field'
+import Badge from '@/components/ui/Badge'
+import Modal from '@/components/ui/Modal'
+import PaginatedTable from '@/components/ui/PaginatedTable'
 
 /**
- * Administration page of the academic terms catalog (school years): paginated
- * listing, create/edit, mark as current (single) and delete. Actions are shown
- * according to the permissions of the authenticated user.
+ * Academic terms administration view (school years): paginated listing,
+ * create/edit, mark as current (single) and delete. All the state comes from
+ * the `useTerms` hook; here only the presentation is rendered.
  *
- * @author Fanny Mayorga
+ * @author Fanny Mayorga | @date 20-09-2026
  */
 
-const EMPTY_FORM: TermForm = {
-  name: '',
-  start_date: '',
-  end_date: '',
-  is_current: false,
-}
+type TermsTableProps = ReturnType<typeof useTerms>
 
-export default function TermsPage() {
+export default function TermsTable(props: TermsTableProps) {
   const { t } = useTranslation()
-  const { user } = useAuth()
 
-  const isAdmin = user?.roles.includes('administrator') ?? false
-  const can = (permission: string): boolean =>
-    isAdmin || (user?.permissions ?? []).includes(permission)
-
-  const canCreate = can('create_terms')
-  const canEdit = can('edit_terms')
-  const canDelete = can('delete_terms')
-
-  const { data, loading, error, page, totalPages, limit, total, from, to, goToPage, changeLimit, reload } =
-    usePagination<AcademicTerm>({
-      errorMessage: t('periods.messages.load_error'),
-      fetch: (p, perPage) => fetchTermsPaginated(p, perPage),
-    })
-
-  const [formOpen, setFormOpen] = useState<boolean>(false)
-  const [editing, setEditing] = useState<AcademicTerm | null>(null)
-  const [form, setForm] = useState<TermForm>(EMPTY_FORM)
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-  const [submitting, setSubmitting] = useState<boolean>(false)
-
-  const [deleting, setDeleting] = useState<AcademicTerm | null>(null)
-  const [confirmingDelete, setConfirmingDelete] = useState<boolean>(false)
-  const [settingCurrent, setSettingCurrent] = useState<number | null>(null)
-
-  const [banner, setBanner] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
-
-  useEffect(() => {
-    if (banner === null) {
-      return
-    }
-
-    const id = window.setTimeout(() => setBanner(null), 5000)
-
-    return () => window.clearTimeout(id)
-  }, [banner])
-
-  const openNew = useCallback((): void => {
-    setEditing(null)
-    setForm(EMPTY_FORM)
-    setFieldErrors({})
-    setFormOpen(true)
-  }, [])
-
-  const openEdit = useCallback((term: AcademicTerm): void => {
-    setEditing(term)
-    setForm({
-      name: term.name,
-      start_date: (term.start_date ?? '').slice(0, 10),
-      end_date: (term.end_date ?? '').slice(0, 10),
-      is_current: term.is_current,
-    })
-    setFieldErrors({})
-    setFormOpen(true)
-  }, [])
-
-  const updateField = (field: keyof TermForm, value: string | boolean): void => {
-    setForm((prev) => ({ ...prev, [field]: value }))
-    setFieldErrors((prev) => {
-      const copy = { ...prev }
-      delete copy[field]
-      return copy
-    })
-  }
-
-  const submit = async (event: FormEvent): Promise<void> => {
-    event.preventDefault()
-
-    const errors: Record<string, string> = {}
-
-    if (form.name.trim() === '') {
-      errors.name = t('periods.form.required')
-    }
-
-    if (form.start_date === '') {
-      errors.start_date = t('periods.form.required')
-    }
-
-    if (form.end_date === '') {
-      errors.end_date = t('periods.form.required')
-    } else if (form.start_date !== '' && form.end_date < form.start_date) {
-      errors.end_date = t('periods.form.end_after_start')
-    }
-
-    setFieldErrors(errors)
-
-    if (Object.keys(errors).length > 0) {
-      return
-    }
-
-    setSubmitting(true)
-
-    try {
-      if (editing !== null) {
-        const updated = await updateTerm(editing.id, form)
-        setBanner({ type: 'ok', text: t('periods.messages.updated', { name: updated.name }) })
-      } else {
-        const created = await createTerm(form)
-        setBanner({ type: 'ok', text: t('periods.messages.created', { name: created.name }) })
-      }
-
-      setFormOpen(false)
-      reload()
-    } catch (reason) {
-      if (isAxiosError(reason) && reason.response?.status === 422) {
-        const details = reason.response.data?.errors as Record<string, string[]> | undefined
-
-        if (details !== undefined) {
-          const mapped: Record<string, string> = {}
-
-          for (const [field, messages] of Object.entries(details)) {
-            mapped[field] = messages[0]
-          }
-
-          setFieldErrors(mapped)
-        }
-      } else {
-        setBanner({ type: 'error', text: t('periods.messages.error_generic') })
-      }
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const setCurrent = async (term: AcademicTerm): Promise<void> => {
-    setSettingCurrent(term.id)
-
-    try {
-      await updateTerm(term.id, { is_current: true })
-      setBanner({ type: 'ok', text: t('periods.messages.current_set', { name: term.name }) })
-      reload()
-    } catch {
-      setBanner({ type: 'error', text: t('periods.messages.error_generic') })
-    } finally {
-      setSettingCurrent(null)
-    }
-  }
-
-  const confirmDelete = async (): Promise<void> => {
-    if (deleting === null) {
-      return
-    }
-
-    setConfirmingDelete(true)
-
-    try {
-      await deleteTerm(deleting.id)
-      setBanner({ type: 'ok', text: t('periods.messages.deleted', { name: deleting.name }) })
-      setDeleting(null)
-      reload()
-    } catch (reason) {
-      if (isAxiosError(reason) && reason.response?.status === 422) {
-        setBanner({ type: 'error', text: t('periods.messages.delete_blocked') })
-      } else {
-        setBanner({ type: 'error', text: t('periods.messages.error_generic') })
-      }
-
-      setDeleting(null)
-    } finally {
-      setConfirmingDelete(false)
-    }
-  }
+  const {
+    canCreate,
+    canEdit,
+    canDelete,
+    data,
+    loading,
+    error,
+    page,
+    totalPages,
+    limit,
+    total,
+    from,
+    to,
+    goToPage,
+    changeLimit,
+    formOpen,
+    editing,
+    form,
+    fieldErrors,
+    submitting,
+    openNew,
+    openEdit,
+    closeForm,
+    updateField,
+    submit,
+    setCurrent,
+    settingCurrent,
+    deleting,
+    requestDelete,
+    cancelDelete,
+    confirmingDelete,
+    confirmDelete,
+    banner,
+  } = props
 
   const columns = [
     {
@@ -204,12 +67,12 @@ export default function TermsPage() {
     {
       key: 'start',
       header: t('periods.table.start'),
-      render: (term: AcademicTerm) => <>{term.start_date?.slice(0, 10) ?? '—'}</>,
+      render: (term: AcademicTerm) => <>{formatDate(term.start_date)}</>,
     },
     {
       key: 'end',
       header: t('periods.table.end'),
-      render: (term: AcademicTerm) => <>{term.end_date?.slice(0, 10) ?? '—'}</>,
+      render: (term: AcademicTerm) => <>{formatDate(term.end_date)}</>,
     },
     {
       key: 'status',
@@ -259,7 +122,7 @@ export default function TermsPage() {
           {canDelete && (
             <button
               type="button"
-              onClick={() => setDeleting(term)}
+              onClick={() => requestDelete(term)}
               title={t('periods.actions.delete')}
               aria-label={t('periods.actions.delete')}
               className="ed-item-accion ed-item-accion--peligro"
@@ -318,10 +181,7 @@ export default function TermsPage() {
 
       <Modal
         open={formOpen}
-        onClose={() => {
-          setFormOpen(false)
-          setEditing(null)
-        }}
+        onClose={closeForm}
         title={t(editing !== null ? 'periods.form.title_edit' : 'periods.form.title_create')}
         size="wide"
       >
@@ -371,7 +231,7 @@ export default function TermsPage() {
           <p className="ed-pista">{t('periods.form.is_current_help')}</p>
 
           <div className="ed-acciones ed-acciones--fin">
-            <Button variant="secondary" type="button" onClick={() => setFormOpen(false)} className="ed-acciones__ancho">
+            <Button variant="secondary" type="button" onClick={closeForm} className="ed-acciones__ancho">
               {t('periods.confirm.cancel')}
             </Button>
             <Button type="submit" loading={submitting} className="ed-acciones__ancho">
@@ -383,7 +243,7 @@ export default function TermsPage() {
 
       <Modal
         open={deleting !== null}
-        onClose={() => setDeleting(null)}
+        onClose={cancelDelete}
         title={t('periods.confirm.delete_title')}
       >
         <div className="space-y-5">
@@ -392,7 +252,7 @@ export default function TermsPage() {
           </p>
 
           <div className="ed-acciones ed-acciones--simple">
-            <Button variant="secondary" onClick={() => setDeleting(null)}>
+            <Button variant="secondary" onClick={cancelDelete}>
               {t('periods.confirm.cancel')}
             </Button>
             <Button variant="danger" loading={confirmingDelete} onClick={() => void confirmDelete()}>

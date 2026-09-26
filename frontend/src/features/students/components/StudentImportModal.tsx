@@ -3,13 +3,14 @@ import type { ChangeEvent, FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { Download, FileUp, RotateCcw, Upload } from 'lucide-react'
-import Modal from '../ui/Modal'
-import Field from '../ui/Field'
-import Select from '../ui/Select'
-import Button from '../ui/Button'
-import Badge from '../ui/Badge'
-import { fetchCourses, fetchTerms, importStudents } from '../../api'
-import type { AcademicResource, ImportResult } from '../../types'
+import { importStudents } from '@/features/students/services/students.service'
+import { fetchCourses, fetchTerms } from '@/features/academic'
+import type { AcademicResource, ImportResult } from '@/types'
+import Modal from '@/components/ui/Modal'
+import Field from '@/components/ui/Field'
+import Select from '@/components/ui/Select'
+import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 
 /**
  * Bulk student import modal (CSV). Lets the user choose the separator,
@@ -53,8 +54,12 @@ export default function StudentImportModal({ open, onClose, onImported }: Studen
     setError(null)
     setResult(null)
 
-    void fetchCourses().then(setCourses).catch(() => setCourses([]))
-    void fetchTerms().then(setTerms).catch(() => setTerms([]))
+    void fetchCourses()
+      .then(setCourses)
+      .catch(() => setCourses([]))
+    void fetchTerms()
+      .then(setTerms)
+      .catch(() => setTerms([]))
   }, [open])
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>): void => {

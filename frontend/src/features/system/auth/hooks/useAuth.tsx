@@ -1,14 +1,13 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { api, fetchCsrf } from '../api'
-import type { SessionUser } from '../types'
+import { fetchMe, signIn, signOut } from '@/features/system/auth/services/auth.service'
+import type { SessionUser } from '@/types'
 
 /**
  * Authentication context of EduSense: restores the session with the Sanctum
  * HttpOnly cookies and exposes login/logout.
  *
- * @author Fanny Mayorga
- * @date   26-09-2026
+ * @author Fanny Mayorga | @date 26-09-2026
  */
 
 interface AuthContextValue {
@@ -27,11 +26,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    api
-      .get<{ data: SessionUser }>('/v1/me')
-      .then(({ data }) => {
+    fetchMe()
+      .then((session) => {
         if (mounted) {
-          setUser(data.data)
+          setUser(session)
         }
       })
       .catch(() => {
@@ -51,16 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useCallback(async (email: string, password: string): Promise<void> => {
-    await fetchCsrf()
+    const session = await signIn(email, password)
 
-    const { data } = await api.post<{ data: SessionUser }>('/v1/login', { email, password })
-
-    setUser(data.data)
+    setUser(session)
   }, [])
 
   const logout = useCallback(async (): Promise<void> => {
     try {
-      await api.post('/v1/logout')
+      await signOut()
     } finally {
       setUser(null)
     }

@@ -2,17 +2,16 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Languages, Menu, Moon, Sun } from 'lucide-react'
-import Sidebar from './Sidebar'
-import { useDarkMode } from '../hooks/useTheme'
-import RequireAuth from '../auth/RequireAuth'
+import Sidebar from '@/layout/Sidebar'
+import { useDarkMode } from '@/hooks/useTheme'
+import { RequireAuth } from '@/features/system/auth'
 
 /**
  * Authenticated shell of EduSense: lateral sidebar with role-based
  * navigation, top header with language/theme selectors and the active route
  * content rendered via <Outlet />.
  *
- * @author Fanny Mayorga
- * @date   20-09-2026
+ * @author Fanny Mayorga | @date 20-09-2026
  */
 function Home() {
   const { t, i18n } = useTranslation()

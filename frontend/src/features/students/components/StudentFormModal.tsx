@@ -3,13 +3,18 @@ import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { Check, ChevronLeft, ChevronRight, Save } from 'lucide-react'
-import { createStudent, fetchCourses, fetchStudent, fetchTerms, updateStudent } from '../../api'
-import type { AcademicResource, StudentDetail, StudentForm, StudentListItem } from '../../types'
-import Modal from '../ui/Modal'
-import Field from '../ui/Field'
-import Input from '../ui/Input'
-import Select from '../ui/Select'
-import Button from '../ui/Button'
+import {
+  createStudent,
+  fetchStudent,
+  updateStudent,
+} from '@/features/students/services/students.service'
+import { fetchCourses, fetchTerms } from '@/features/academic'
+import type { AcademicResource, StudentDetail, StudentForm, StudentListItem } from '@/types'
+import Modal from '@/components/ui/Modal'
+import Field from '@/components/ui/Field'
+import Input from '@/components/ui/Input'
+import Select from '@/components/ui/Select'
+import Button from '@/components/ui/Button'
 
 /**
  * 4-step wizard to create/edit a student: identification, current academic
@@ -119,8 +124,12 @@ export default function StudentFormModal({
         .catch(() => setGeneralError(t('students.messages.load_error')))
     }
 
-    void fetchCourses().then(setCourses).catch(() => setCourses([]))
-    void fetchTerms(false).then(setTerms).catch(() => setTerms([]))
+    void fetchCourses()
+      .then(setCourses)
+      .catch(() => setCourses([]))
+    void fetchTerms(false)
+      .then(setTerms)
+      .catch(() => setTerms([]))
   }, [open, student, t])
 
   const updateField = (field: keyof StudentForm, value: string | boolean): void => {

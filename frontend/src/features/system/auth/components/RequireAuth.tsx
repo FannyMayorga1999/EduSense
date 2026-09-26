@@ -1,14 +1,13 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
-import { useAuth } from './AuthContext'
-import Spinner from '../components/ui/Spinner'
+import { useAuth } from '@/features/system/auth/hooks/useAuth'
+import Spinner from '@/components/ui/Spinner'
 
 /**
  * Route guard: shows a spinner while the session is restored and redirects
  * to the login page when the user is not authenticated.
  *
- * @author Fanny Mayorga
- * @date   26-09-2026
+ * @author Fanny Mayorga | @date 26-09-2026
  */
 
 function LoadingScreen() {

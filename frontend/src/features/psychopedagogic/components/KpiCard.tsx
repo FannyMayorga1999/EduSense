@@ -1,11 +1,10 @@
 import type { LucideIcon } from 'lucide-react'
-import Card from './ui/Card'
+import Card from '@/components/ui/Card'
 
 /**
- * Reusable KPI card for the dashboard.
+ * KPI card of the psychopedagogic dashboard.
  *
- * @author Fanny Mayorga
- * @date   16-09-2026
+ * @author Fanny Mayorga | @date 16-09-2026
  */
 interface KpiCardProps {
   title: string

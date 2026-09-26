@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Button from './Button'
-import Select from './Select'
+import Button from '@/components/ui/Button'
+import Select from '@/components/ui/Select'
 
 /**
  * Reusable table footer of the UI kit: records-per-page selector, visible

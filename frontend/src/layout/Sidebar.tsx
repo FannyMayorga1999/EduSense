@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next'
 import type { ComponentType } from 'react'
 import { CalendarCheck2, CalendarDays, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Users, X } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../auth/AuthContext'
-import Button from './ui/Button'
+import { useAuth } from '@/features/system/auth/hooks/useAuth'
+import Button from '@/components/ui/Button'
 
 /**
  * Lateral sidebar (menu) of EduSense. Items are filtered according to the
@@ -11,8 +11,7 @@ import Button from './ui/Button'
  * everything; the rest only see the sections for which they have the
  * corresponding permission.
  *
- * @author Fanny Mayorga
- * @date   20-09-2026
+ * @author Fanny Mayorga | @date 20-09-2026
  */
 
 interface MenuItem {
