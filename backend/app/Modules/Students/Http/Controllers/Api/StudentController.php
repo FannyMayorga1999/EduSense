@@ -32,9 +32,16 @@ class StudentController extends Controller
 
     /**
      * Shared query builder for the filters used by the list and the export.
+     *
+     * `is_active` and `grade` accept one or several values (repeated query
+     * parameters such as `grade[]=...`); multiple values are combined with OR
+     * through `whereIn`.
      */
     protected function studentsQuery(Request $request): Builder
     {
+        $activeStates = $this->multiValue($request->input('is_active'));
+        $grades = $this->multiValue($request->input('grade'));
+
         return Student::query()
             ->withCount([
                 'psychopedagogicRecords',
@@ -49,11 +56,28 @@ class StudentController extends Controller
                         ->orWhere('document_number', 'like', "%{$search}%");
                 })
             )
-            ->when($request->filled('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
-            ->when(
-                $request->string('grade')->toString(),
-                fn ($query, $grade) => $query->whereHas('enrollments.course', fn ($query) => $query->where('name', 'like', "%{$grade}%"))
-            );
+            ->when($activeStates !== [], fn ($query) => $query->whereIn('is_active', $activeStates))
+            ->when($grades !== [], fn ($query) => $query->whereHas(
+                'enrollments.course',
+                fn ($query) => $query->whereIn('name', $grades)
+            ));
+    }
+
+    /**
+     * Normalizes a filter param that arrives as a single value or as an array
+     * (repeated query params) into a list of trimmed, non-empty strings.
+     *
+     * @return array<int, string>
+     */
+    protected function multiValue(mixed $value): array
+    {
+        $values = is_array($value) ? $value : [$value];
+
+        return collect($values)
+            ->map(fn ($item) => trim((string) $item))
+            ->filter(fn (string $item) => $item !== '')
+            ->values()
+            ->all();
     }
 
     /**

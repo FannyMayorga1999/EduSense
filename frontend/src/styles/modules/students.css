@@ -70,4 +70,57 @@
   .mod-students .ed-badge {
     letter-spacing: 0.02em;
   }
+
+  /* ---------- SIDE PANEL DETAIL ---------- */
+  .ed-detalle__hero {
+    @apply space-y-2;
+  }
+
+  .ed-detalle__badges {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .ed-detalle__grilla {
+    @apply mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2;
+  }
+
+  .ed-detalle__campo {
+    @apply flex flex-col gap-1;
+  }
+
+  .ed-detalle__etiqueta {
+    @apply text-xs font-medium text-stone-500 dark:text-stone-400;
+  }
+
+  .ed-detalle__valor {
+    @apply text-sm text-stone-900 dark:text-white;
+  }
+
+  .ed-detalle__vacio {
+    @apply text-stone-400 dark:text-stone-500;
+  }
+
+  .ed-detalle__contadores {
+    @apply mt-4 flex flex-wrap items-center gap-2 text-xs font-medium text-stone-500 dark:text-stone-400;
+  }
+
+  .ed-detalle__lista {
+    @apply mt-3 space-y-2;
+  }
+
+  .ed-detalle__item {
+    @apply flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-900;
+  }
+
+  .ed-detalle__item-tiempo {
+    @apply font-semibold text-stone-700 dark:text-stone-200;
+  }
+
+  .ed-detalle__item-nombre {
+    @apply text-stone-600 dark:text-stone-300;
+  }
+
+  .ed-detalle__item-paralelo {
+    @apply text-stone-500 dark:text-stone-400;
+  }
 }

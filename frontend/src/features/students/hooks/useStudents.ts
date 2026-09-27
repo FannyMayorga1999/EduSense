@@ -37,8 +37,8 @@ export function useStudents() {
 
   const [search, setSearch] = useState<string>('')
   const [appliedSearch, setAppliedSearch] = useState<string>('')
-  const [status, setStatus] = useState<string>('')
-  const [grade, setGrade] = useState<string>('')
+  const [status, setStatus] = useState<string[]>([])
+  const [grade, setGrade] = useState<string[]>([])
   const [courses, setCourses] = useState<AcademicResource[]>([])
 
   const pagination = usePagination<StudentListItem>({
@@ -48,8 +48,8 @@ export function useStudents() {
         page: p,
         per_page: perPage,
         search: appliedSearch === '' ? undefined : appliedSearch,
-        is_active: status === '' ? undefined : status,
-        grade: grade === '' ? undefined : grade,
+        is_active: status.length > 0 ? status : undefined,
+        grade: grade.length > 0 ? grade : undefined,
       }),
     deps: [status, grade, appliedSearch],
   })
@@ -57,8 +57,10 @@ export function useStudents() {
   const { goToPage, reload } = pagination
 
   const [formOpen, setFormOpen] = useState<boolean>(false)
-  const [editing, setEditing] = useState<StudentListItem | null>(null)
   const [importOpen, setImportOpen] = useState<boolean>(false)
+  const [panelStudent, setPanelStudent] = useState<StudentListItem | null>(null)
+  const [panelMode, setPanelMode] = useState<'view' | 'edit'>('view')
+  const [refreshKey, setRefreshKey] = useState<number>(0)
   const [confirming, setConfirming] = useState<boolean>(false)
   const [pendingAction, setPendingAction] = useState<{
     type: 'deactivate' | 'reactivate'
@@ -97,24 +99,48 @@ export function useStudents() {
   }, [banner])
 
   const openNew = useCallback((): void => {
-    setEditing(null)
     setFormOpen(true)
   }, [])
 
+  const openView = useCallback((student: StudentListItem): void => {
+    setPanelMode('view')
+    setPanelStudent(student)
+  }, [])
+
   const openEdit = useCallback((student: StudentListItem): void => {
-    setEditing(student)
-    setFormOpen(true)
+    setPanelMode('edit')
+    setPanelStudent(student)
+  }, [])
+
+  const closePanel = useCallback((): void => {
+    setPanelStudent(null)
+  }, [])
+
+  const backToView = useCallback((): void => {
+    setPanelMode('view')
   }, [])
 
   const closeForm = useCallback((): void => {
     setFormOpen(false)
-    setEditing(null)
   }, [])
+
+  /**
+   * After editing from the side panel: success banner, back to the read view,
+   * refresh the paginated list and force the panel to reload the detail.
+   */
+  const handlePanelSaved = useCallback(
+    (message: string): void => {
+      setBanner({ type: 'ok', text: message })
+      setPanelMode('view')
+      setRefreshKey((current) => current + 1)
+      reload()
+    },
+    [reload],
+  )
 
   const handleSaved = useCallback(
     (message: string): void => {
       setFormOpen(false)
-      setEditing(null)
       setBanner({ type: 'ok', text: message })
       reload()
     },
@@ -139,8 +165,8 @@ export function useStudents() {
         await exportStudents(
           {
             search: appliedSearch === '' ? undefined : appliedSearch,
-            is_active: status === '' ? undefined : status,
-            grade: grade === '' ? undefined : grade,
+            is_active: status.length > 0 ? status : undefined,
+            grade: grade.length > 0 ? grade : undefined,
           },
           format,
         )
@@ -189,6 +215,7 @@ export function useStudents() {
 
       setPendingAction(null)
       reload()
+      setRefreshKey((current) => current + 1)
     } catch {
       setBanner({ type: 'error', text: t('students.messages.error_generic') })
       setPendingAction(null)
@@ -196,6 +223,54 @@ export function useStudents() {
       setConfirming(false)
     }
   }, [pendingAction, t, reload])
+
+  /**
+   * Chips of the applied filters (search, statuses and grades) shown in the
+   * "active filters" bar. Removing a chip re-queries automatically because
+   * the underlying filter state changes the usePagination dependencies.
+   */
+  const activeFilters: { key: string; label: string }[] = []
+
+  if (appliedSearch !== '') {
+    activeFilters.push({ key: 'search', label: appliedSearch })
+  }
+
+  for (const selected of status) {
+    const label = selected === '1' ? t('students.status_active') : t('students.status_inactive')
+    activeFilters.push({ key: `status:${selected}`, label })
+  }
+
+  for (const selected of grade) {
+    activeFilters.push({ key: `grade:${selected}`, label: selected })
+  }
+
+  const removeFilter = (key: string): void => {
+    if (key === 'search') {
+      setSearch('')
+      setAppliedSearch('')
+
+      return
+    }
+
+    if (key.startsWith('status:')) {
+      const selected = key.slice('status:'.length)
+      setStatus((prev) => prev.filter((item) => item !== selected))
+
+      return
+    }
+
+    if (key.startsWith('grade:')) {
+      const selected = key.slice('grade:'.length)
+      setGrade((prev) => prev.filter((item) => item !== selected))
+    }
+  }
+
+  const clearFilters = (): void => {
+    setSearch('')
+    setAppliedSearch('')
+    setStatus([])
+    setGrade([])
+  }
 
   return {
     canCreate,
@@ -211,6 +286,9 @@ export function useStudents() {
     grade,
     setGrade,
     courses,
+    activeFilters,
+    removeFilter,
+    clearFilters,
     data: pagination.data,
     loading: pagination.loading,
     error: pagination.error,
@@ -224,11 +302,17 @@ export function useStudents() {
     changeLimit: pagination.changeLimit,
     reload: pagination.reload,
     formOpen,
-    editing,
     openNew,
-    openEdit,
     closeForm,
     handleSaved,
+    panelStudent,
+    panelMode,
+    refreshKey,
+    openView,
+    openEdit,
+    closePanel,
+    backToView,
+    handlePanelSaved,
     importOpen,
     openImport,
     closeImport,

@@ -154,6 +154,7 @@ export interface EnrollmentSummary {
  */
 export interface StudentDetail extends Student {
   enrollments: EnrollmentSummary[]
+  tutor?: { id: number; name: string; email: string } | null
 }
 
 /**
@@ -185,12 +186,14 @@ export interface Paginator<T> {
 }
 
 /**
- * Filters of the students list and download.
+ * Filters of the students list and download. `is_active` and `grade` support
+ * multiple values: each selected value is sent as a repeated query parameter
+ * (`grade[]=...`) and combined with OR in the backend.
  */
 export interface StudentFilters {
   search?: string
-  is_active?: string
-  grade?: string
+  is_active?: string[]
+  grade?: string[]
   page?: number
   per_page?: number
 }

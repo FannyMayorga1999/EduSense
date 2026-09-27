@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Modules\Academic\Models\AcademicTerm;
 use App\Modules\Academic\Models\Course;
+use App\Modules\Academic\Models\Enrollment;
 use App\Modules\Students\Models\Student;
 use App\Modules\System\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -239,5 +240,47 @@ class StudentModuleTest extends TestCase
         $this->getJson("/api/v1/students/{$id}")
             ->assertOk()
             ->assertJsonPath('data.gender', 'female');
+    }
+
+    public function test_students_can_be_filtered_by_multiple_grades(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        $term = AcademicTerm::factory()->create();
+        $primero = Course::factory()->create(['name' => 'Primero de Básica']);
+        $segundo = Course::factory()->create(['name' => 'Segundo de Básica']);
+        $tercero = Course::factory()->create(['name' => 'Tercero de Básica']);
+
+        $first = Student::factory()->create(['is_active' => true]);
+        $second = Student::factory()->create(['is_active' => true]);
+        $third = Student::factory()->create(['is_active' => false]);
+
+        Enrollment::factory()->create(['student_id' => $first->id, 'course_id' => $primero->id, 'term_id' => $term->id]);
+        Enrollment::factory()->create(['student_id' => $second->id, 'course_id' => $segundo->id, 'term_id' => $term->id]);
+        Enrollment::factory()->create(['student_id' => $third->id, 'course_id' => $tercero->id, 'term_id' => $term->id]);
+
+        $response = $this->getJson('/api/v1/students?grade[]=Primero de Básica&grade[]=Segundo de Básica')
+            ->assertOk()
+            ->assertJsonPath('data.total', 2);
+
+        $ids = collect($response->json('data.data'))->pluck('id')->sort()->values()->all();
+
+        $this->assertSame([$first->id, $second->id], $ids);
+    }
+
+    public function test_students_can_be_filtered_by_multiple_statuses(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        Student::factory()->count(2)->create(['is_active' => true]);
+        Student::factory()->count(1)->create(['is_active' => false]);
+
+        $this->getJson('/api/v1/students?is_active[]=1')
+            ->assertOk()
+            ->assertJsonPath('data.total', 2);
+
+        $this->getJson('/api/v1/students?is_active[]=1&is_active[]=0')
+            ->assertOk()
+            ->assertJsonPath('data.total', 3);
     }
 }

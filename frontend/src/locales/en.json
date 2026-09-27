@@ -107,7 +107,11 @@
       "status_inactive": "Inactive",
       "filter_grade": "Grade",
       "grade_all": "All grades",
-      "new": "New student",
+      "filters_active": "Applied filters",
+      "clear_all": "Clear all",
+      "remove_filter": "Remove filter",
+      "selected_count": "{{count}} selected",
+      "new": "New",
       "upload": "Upload CSV",
       "download_csv": "Download CSV",
       "download_xlsx": "Download Excel",
@@ -123,7 +127,18 @@
       "actions": {
         "edit": "Edit student",
         "deactivate": "Deactivate student",
-        "reactivate": "Reactivate student"
+        "reactivate": "Reactivate student",
+        "view": "View"
+      },
+      "detail": {
+        "title": "Student information",
+        "edit": "Edit",
+        "close": "Close",
+        "tutor": "Tutor (responsible)",
+        "records_count": "Psychopedagogic records",
+        "diagnostics_count": "Diagnostics",
+        "interventions_count": "Intervention plans",
+        "section_enrollments": "Enrollment history"
       },
       "form": {
         "create_title": "New student",
@@ -227,6 +242,7 @@
         "reactivated": "Student reactivated.",
         "export_error": "The download could not be generated. Try again.",
         "load_error": "Students could not be loaded. Check the server.",
+        "loading": "Loading information…",
         "error_generic": "Something went wrong. Try again."
       }
     },

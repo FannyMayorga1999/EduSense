@@ -1,1 +1,136 @@
-Para Laravel, la arquitectura cambia ligeramente para alinearse de forma natural con el patrón MVC (Modelo-Vista-Controlador), la Programación Orientada a Objetos (POO) y su ORM nativo Eloquent.Si vas a estructurar los módulos administrativos (auth, users, roles, settings) dentro de un dominio System, la mejor forma de organizar el backend en Laravel manteniendo la máxima mantenibilidad y escalabilidad es mediante una arquitectura por dominios o módulos funcionales (Domain-Driven/Modular MVC).ESPECIFICACION TECNICA DE ARQUITECTURA MODULAR LARAVEL (MVC + POO + ELOQUENT)ARBOL COMPLETO DE CARPETAS Y DIRECTORIOS (APP/)app/|-- Core/                   # Base global del sistema (POO / Traits / Base Models)|   |-- Traits/             # Traits reutilizables (ej. HasUuid, Filterable)|   -- Services/           # Servicios globales base (ej. BaseService, BaseRepository) | |-- Domains/                # Agrupacion por Dominios de Negocio |   -- System/             # Dominio contenedor para Administracion / Sistema|       |-- Auth/           # Modulo: Autenticacion, JWT, Tokens|       |   |-- Controllers/|       |   |-- Models/|       |   |-- Requests/|       |   |-- Services/|       |   -- Routes/ |       |-- Users/          # Modulo: Gestion de Usuarios |       |   |-- Controllers/ |       |   |-- Models/ |       |   |-- Requests/ |       |   |-- Services/ |       |   -- DTOs/|       |-- Roles/          # Modulo: Roles y Matriz de Permisos|       |   |-- Controllers/|       |   |-- Models/|       |   |-- Services/|       |   -- Enums/ |       -- Settings/       # Modulo: Configuracion General|           |-- Controllers/|           |-- Models/|           -- Services/ | |-- Http/                   # Capa HTTP global (Middleware, Requests base) |   -- Middleware/|`-- Providers/              # Proveedores de servicios de LaravelRESPONSABILIDADES Y CAPAS (POO + MVC + ELOQUENT)Controllers (Controladores - MVC):Reciben las peticiones HTTP, invocan las validaciones (Form Requests) y delegan la lógica de negocio al Servicio correspondiente. Retornan respuestas JSON o vistas.Models (Modelos Eloquent ORM - MVC + POO):Mapean las tablas de la base de datos a objetos PHP mediante Eloquent. Encapsulan las relaciones ($this->hasMany,$this->belongsTo), Scopes de consulta y Mutadores/Censores de atributos.Services (Capa de Servicios / Negocio - POO):Clases PHP puras que contienen la lógica de negocio pesada, transacciones de base de datos (DB::transaction), envío de correos o eventos. Evitan que los controladores se vuelvan gigantes.Requests (Form Requests / Validaciones):Clases que encapsulan las reglas de validación (rules()) y la autorización de la petición antes de llegar al controlador.DTOs / Enums (POO Avanzada):Clases con propiedades fuertemente tipadas para transferir datos entre capas de forma segura y Enums de PHP para constantes de estado (ej. StatusUserEnum::ACTIVE).REGLAS Y BUENAS PRACTICAS EN LARAVELControladores delgados (Fat Models/Services, Thin Controllers):Un controlador no debe contener consultas SQL directas ni lógica compleja. Su único trabajo es coordinar la petición y la respuesta.CORRECTO: $users =$this->userService->getAllPaginated($request->validated());INCORRECTO: User::where('status', 1)->orderBy('name')->get(); directamente en el controlador.Uso eficiente de Eloquent ORM:Aprovechar las relaciones entre modelos (User belongsTo Role, Role belongsToMany Permission).Prevenir el problema de consultas N+1 utilizando Eager Loading (User::with('role')->get()).Usar Scopes para consultas frecuentes (ej. User::active()->get()).Inyección de Dependencias (POO):Inyectar los Servicios en los constructores de los Controladores a través del contenedor de dependencias de Laravel.Rutas organizadas por módulo:Cada módulo dentro de System puede registrar sus propias rutas en un archivo independiente dentro de su carpeta Routes/api.php y cargarse mediante un ServiceProvider.GUIA RAPIDA DE FLUJO EN CADA MODULO[Cliente HTTP / React]|v[Routes / Middleware]|v[Form Request] -------> (Si falla, retorna 422 Validacion)|v[Controller]|v[Service Class] -------> [Eloquent Models / DB]|v[JSON Response / Resource]
+1. Sistema de Variables CSS (:root)
+Copia este bloque en tu archivo CSS global (p. ej., styles.css o App.css). Mantiene tus tonos verdes, grises y tipografía mientras implementa el sistema de espaciado (gap, padding) y radios de borde:
+
+CSS
+:root {
+  /* ===== PALETA DE COLORES (Extraída de tu sistema) ===== */
+  /* Colores Primarios y de Marca */
+  --primary: #0F9D8A;          /* Verde principal de la marca */
+  --primary-hover: #0C8575;    /* Verde para estados hover */
+  --primary-light: #E6F7F4;    /* Fondo suave para badges/tabs seleccionados */
+  --primary-focus: rgba(15, 157, 138, 0.2); /* Ring de enfoque para inputs */
+
+  /* Colores Neutrales de Fondo y Superficie */
+  --bg-main: #F4F6F8;          /* Fondo general de la aplicación */
+  --bg-surface: #FFFFFF;       /* Fondo de Tarjetas, Modales y Tablas */
+  --bg-subtle: #FAFAFA;        /* Fondo para campos deshabilitados o sub-secciones */
+  --border-color: #E2E8F0;     /* Bordes finos de inputs y divisores */
+
+  /* Colores de Texto y Tipografía */
+  --text-main: #1E293B;        /* Títulos y texto con alto contraste */
+  --text-muted: #64748B;       /* Subtítulos, labels y captions */
+  --text-disabled: #94A3B8;    /* Textos inactivos o placeholders */
+
+  /* Estados y Badges */
+  --status-active-bg: #D1FAE5;  /* Verde pastel para "Activo" */
+  --status-active-text: #065F46;
+  --status-inactive-bg: #F1F5F9;/* Gris pastel para "Baja lógica" / "Inactivo" */
+  --status-inactive-text: #475569;
+
+  /* ===== SISTEMA DE ESPACIADO (GAP Y PADDING) ===== */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* ===== RADIOS DE BORDE (BORDER RADIUS) ===== */
+  --radius-sm: 8px;            /* Para inputs y botones pequeños */
+  --radius-md: 12px;           /* Para tarjetas internas y selectores */
+  --radius-lg: 16px;           /* Para contenedores principales y modales */
+  --radius-pill: 9999px;       /* Para badges y botones tipo pill */
+
+  /* ===== SOMBRAS Y ELEVACIÓN ===== */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --transition-fast: all 0.2s ease-in-out;
+}
+2. Prompts para Generar tus Componentes con Variables y Espaciados
+Usa estos prompts refinados en tu herramienta de IA o editor de código. Ya tienen preconfiguradas tus variables de color y las reglas de diseño UI/UX:
+
+Prompt 1: Componentes de Inputs, Selects y Modales (Formularios)
+Prompt:
+
+"Actúa como desarrollador Frontend Senior experto en CSS y UI/UX. Genera los estilos CSS utilizando exclusivamente las variables :root definidas previamente para la vista de edición de estudiante.   
+PNG
+
+Requisitos:
+
+Grid de Formulario: Implementa display: grid con grid-template-columns: repeat(auto-fit, minmax(240px, 1rem)) y un gap: var(--space-lg).
+
+Inputs y Selects:
+
+background-color: var(--bg-surface) con border: 1px solid var(--border-color).
+
+border-radius: var(--radius-sm) y padding: var(--space-sm) var(--space-md).
+
+Texto con color: var(--text-main) y placeholder con color: var(--text-disabled).
+
+En :focus, aplica border-color: var(--primary) y box-shadow: 0 0 0 3px var(--primary-focus).
+
+Labels: Tipografía font-size: 0.875rem, font-weight: 500, color: var(--text-muted) y margin-bottom: var(--space-xs).
+
+Botones del Modal: Crea un botón primario guardado usando background-color: var(--primary) y border-radius: var(--radius-pill), y un botón secundario cancelar.
+
+Proporciona la estructura HTML limpia y el código CSS totalmente comentado."
+
+Prompt 2: Tarjetas de Detalle / Perfil del Estudiante (gap y layout modular)
+Prompt:
+
+"Crea el maquetado CSS/HTML para la vista de detalle del estudiante mezclando el estilo de tarjetas modernas pero utilizando la paleta de colores original de mi aplicación definida en :root.   
+PNG
++ 3
+
+Requisitos de diseño:
+
+Header del Estudiante: Layout flex horizontal (display: flex, gap: var(--space-md), align-items: center) con foto/avatar de 64px, Nombre en font-size: 1.25rem (var(--text-main)) y un badge verde claro (background: var(--status-active-bg), color: var(--status-active-text), border-radius: var(--radius-pill)).   
+PNG
+
+Grid de Tarjetas de Información: Layout de contenedor principal con display: grid, gap: var(--space-lg) y 2 columnas en pantallas medianas/grandes.
+
+Estilo de la Tarjeta (.info-card):
+
+background: var(--bg-surface).
+
+border-radius: var(--radius-md).
+
+padding: var(--space-lg).
+
+box-shadow: var(--shadow-card).
+
+Títulos de sección con color: var(--primary) y font-size: 0.875rem, text-transform: uppercase, letter-spacing: 0.05em.
+
+Items de Datos: Parejas de Label/Valor organizadas en flex vertical con gap: var(--space-2xs).
+
+Entrega código HTML y CSS semántico utilizando únicamente variables CSS (var(...))."
+
+Prompt 3: Tabla de Estudiantes y Barra de Filtros
+Prompt:
+
+"Genera el CSS para rediseñar la tabla principal de estudiantes y la barra de filtros superior usando la arquitectura de variables :root.   
+PNG
++ 1
+
+Requisitos:
+
+Barra de Búsqueda/Filtros: Contenedor tipo tarjeta (background: var(--bg-surface), border-radius: var(--radius-md)) con display: flex, gap: var(--space-md) y padding: var(--space-md).
+
+Tabla:
+
+Encabezados (`
+
+) con background: var(--bg-main), color: var(--text-muted), font-size: 0.85remypadding: var(--space-sm) var(--space-md)`.
+
+Celdas (`
+
+) con padding: var(--space-md)yborder-bottom: 1px solid var(--border-color)`.
+
+Fila en hover (tr:hover) con background-color: var(--primary-light).
+
+Acciones y Badges: Aplica botones redondeados pequeños para las acciones de edición/vista y la lógica de badges var(--status-active-bg).   
+PNG
++ 1
+
+Entrega el código funcional listo para incluir en el proyecto."

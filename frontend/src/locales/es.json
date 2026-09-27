@@ -107,7 +107,11 @@
       "status_inactive": "Inactivo",
       "filter_grade": "Grado",
       "grade_all": "Todos los grados",
-      "new": "Nuevo estudiante",
+      "filters_active": "Filtros aplicados",
+      "clear_all": "Limpiar todo",
+      "remove_filter": "Quitar filtro",
+      "selected_count": "{{count}} seleccionados",
+      "new": "Nuevo",
       "upload": "Subir CSV",
       "download_csv": "Descargar CSV",
       "download_xlsx": "Descargar Excel",
@@ -123,7 +127,18 @@
       "actions": {
         "edit": "Editar estudiante",
         "deactivate": "Desactivar estudiante",
-        "reactivate": "Reactivar estudiante"
+        "reactivate": "Reactivar estudiante",
+        "view": "Ver"
+      },
+      "detail": {
+        "title": "Información del estudiante",
+        "edit": "Editar",
+        "close": "Cerrar",
+        "tutor": "Tutor (responsable)",
+        "records_count": "Registros psicopedagógicos",
+        "diagnostics_count": "Diagnósticos",
+        "interventions_count": "Planes de intervención",
+        "section_enrollments": "Historial de matrículas"
       },
       "form": {
         "create_title": "Nuevo estudiante",
@@ -227,6 +242,7 @@
         "reactivated": "Estudiante reactivado.",
         "export_error": "No se pudo generar la descarga. Intenta de nuevo.",
         "load_error": "No se pudieron cargar los estudiantes. Verifica el servidor.",
+        "loading": "Cargando información…",
         "error_generic": "Ocurrió un error. Intenta de nuevo."
       }
     },

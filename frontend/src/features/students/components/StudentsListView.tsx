@@ -1,13 +1,15 @@
 import { useTranslation } from 'react-i18next'
-import { Download, FileSpreadsheet, Pencil, Plus, Search, Upload, UserCheck, UserX } from 'lucide-react'
+import { Download, Eye, FileSpreadsheet, Pencil, Plus, Search, Upload, UserCheck, UserX } from 'lucide-react'
 import type { useStudents } from '@/features/students/hooks/useStudents'
 import StudentFormModal from '@/features/students/components/StudentFormModal'
 import StudentImportModal from '@/features/students/components/StudentImportModal'
+import StudentDetailPanel from '@/features/students/components/StudentDetailPanel'
 import { formatDate } from '@/utils/format'
 import type { StudentListItem } from '@/types'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import Select from '@/components/ui/Select'
+import MultiSelect from '@/components/ui/MultiSelect'
+import ActiveFilters from '@/components/ui/ActiveFilters'
 import Badge from '@/components/ui/Badge'
 import Modal from '@/components/ui/Modal'
 import PaginatedTable from '@/components/ui/PaginatedTable'
@@ -62,6 +64,9 @@ export default function StudentsListView(props: StudentsListViewProps) {
     grade,
     setGrade,
     courses,
+    activeFilters,
+    removeFilter,
+    clearFilters,
     data,
     loading,
     error,
@@ -74,11 +79,17 @@ export default function StudentsListView(props: StudentsListViewProps) {
     goToPage,
     changeLimit,
     formOpen,
-    editing,
     openNew,
     openEdit,
     closeForm,
     handleSaved,
+    panelStudent,
+    panelMode,
+    refreshKey,
+    openView,
+    closePanel,
+    backToView,
+    handlePanelSaved,
     importOpen,
     openImport,
     closeImport,
@@ -93,6 +104,12 @@ export default function StudentsListView(props: StudentsListViewProps) {
     exportList,
   } = props
 
+  const backToEdit = (): void => {
+    if (panelStudent !== null) {
+      openEdit(panelStudent)
+    }
+  }
+
   const columns = [
     {
       key: 'document',
@@ -103,7 +120,15 @@ export default function StudentsListView(props: StudentsListViewProps) {
       key: 'full_name',
       header: t('students.table.full_name'),
       render: (student: StudentListItem) => (
-        <span className="ed-table__resalto">{student.full_name}</span>
+        <button
+          type="button"
+          onClick={() => openView(student)}
+          title={t('students.actions.view')}
+          aria-label={t('students.actions.view')}
+          className="ed-table__resalto text-left transition hover:text-primary-600 hover:underline"
+        >
+          {student.full_name}
+        </button>
       ),
     },
     {
@@ -128,6 +153,16 @@ export default function StudentsListView(props: StudentsListViewProps) {
       header: t('students.table.actions'),
       render: (student: StudentListItem) => (
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => openView(student)}
+            title={t('students.actions.view')}
+            aria-label={t('students.actions.view')}
+            className="ed-item-accion"
+          >
+            <Eye className="h-4 w-4" />
+          </button>
+
           {canEdit && (
             <button
               type="button"
@@ -170,9 +205,18 @@ export default function StudentsListView(props: StudentsListViewProps) {
 
   return (
     <section className="mod-students space-y-6" aria-label={t('students.title')}>
-      <div>
-        <h1 className="ed-page__title">{t('students.title')}</h1>
-        <p className="ed-page__subtitle">{t('students.subtitle')}</p>
+      <div className="ed-page__encabezado">
+        <div>
+          <h1 className="ed-page__title">{t('students.title')}</h1>
+          <p className="ed-page__subtitle">{t('students.subtitle')}</p>
+        </div>
+
+        {props.canCreate && (
+          <Button variant="primary" onClick={openNew} className="ed-btn--ancho">
+            <Plus className="h-4 w-4" />
+            {t('students.new')}
+          </Button>
+        )}
       </div>
 
       {banner !== null && (
@@ -181,115 +225,139 @@ export default function StudentsListView(props: StudentsListViewProps) {
         </div>
       )}
 
-      <PaginatedTable
-        data={data}
-        loading={loading}
-        error={error}
-        page={page}
-        totalPages={totalPages}
-        onChange={goToPage}
-        limit={limit}
-        onChangeLimit={changeLimit}
-        total={total}
-        from={from}
-        to={to}
-        getRowKey={(student) => student.id}
-        emptyMessage={t('students.table.empty')}
-        columns={columns}
-        toolbar={
-          <>
-            <div className="ed-toolbar__filtros">
-              <div className="ed-toolbar__busqueda">
-                <Search className="ed-toolbar__icono" />
-                <Input
-                  type="search"
-                  value={search}
-                  onChange={(event) => setSearch(event.target.value)}
-                  placeholder={t('students.search_placeholder')}
-                  className="pl-9"
-                  aria-label={t('students.search_placeholder')}
-                />
+      <section className="ed-panel ed-panel--filtros" aria-label={t('students.title')}>
+        <div className="ed-toolbar__filtros">
+          <div className="ed-toolbar__busqueda">
+            <Search className="ed-toolbar__icono" />
+            <Input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t('students.search_placeholder')}
+              className="pl-9"
+              aria-label={t('students.search_placeholder')}
+            />
+          </div>
+
+          <MultiSelect
+            options={[
+              { value: '1', label: t('students.status_active') },
+              { value: '0', label: t('students.status_inactive') },
+            ]}
+            value={status}
+            onChange={setStatus}
+            placeholder={t('students.status_all')}
+            countText={(count) => t('students.selected_count', { count })}
+            clearAllLabel={t('students.clear_all')}
+            ariaLabel={t('students.filter_status')}
+            className="sm:w-44"
+          />
+
+          {canViewCourses && courses.length > 0 && (
+            <MultiSelect
+              options={courses.map((course) => ({ value: course.name, label: course.name }))}
+              value={grade}
+              onChange={setGrade}
+              placeholder={t('students.grade_all')}
+              countText={(count) => t('students.selected_count', { count })}
+              clearAllLabel={t('students.clear_all')}
+              ariaLabel={t('students.filter_grade')}
+              className="sm:w-52"
+            />
+          )}
+        </div>
+      </section>
+
+      <section aria-label={t('students.filters_active')}>
+        <ActiveFilters
+          filters={activeFilters}
+          onRemove={removeFilter}
+          onClearAll={clearFilters}
+          title={t('students.filters_active')}
+          clearAllLabel={t('students.clear_all')}
+          removeLabel={t('students.remove_filter')}
+        />
+      </section>
+
+      <section aria-label={t('students.title')}>
+        <PaginatedTable
+          data={data}
+          loading={loading}
+          error={error}
+          page={page}
+          totalPages={totalPages}
+          onChange={goToPage}
+          limit={limit}
+          onChangeLimit={changeLimit}
+          total={total}
+          from={from}
+          to={to}
+          getRowKey={(student) => student.id}
+          emptyMessage={t('students.table.empty')}
+          columns={columns}
+          toolbar={
+            <div className="sm:flex sm:justify-end">
+              <div className="ed-toolbar__acciones">
+                {canExport && (
+                  <>
+                    <Button
+                      variant="secondary"
+                      iconOnly
+                      onClick={() => void exportList('csv')}
+                      title={t('students.download_csv')}
+                      aria-label={t('students.download_csv')}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      iconOnly
+                      onClick={() => void exportList('xlsx')}
+                      title={t('students.download_xlsx')}
+                      aria-label={t('students.download_xlsx')}
+                    >
+                      <FileSpreadsheet className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+
+                {canImport && (
+                  <Button
+                    variant="secondary"
+                    iconOnly
+                    onClick={openImport}
+                    title={t('students.upload')}
+                    aria-label={t('students.upload')}
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
-
-              <Select
-                value={status}
-                onChange={(event) => setStatus(event.target.value)}
-                className="sm:w-40"
-                aria-label={t('students.filter_status')}
-              >
-                <option value="">{t('students.status_all')}</option>
-                <option value="1">{t('students.status_active')}</option>
-                <option value="0">{t('students.status_inactive')}</option>
-              </Select>
-
-              {canViewCourses && courses.length > 0 && (
-                <Select
-                  value={grade}
-                  onChange={(event) => setGrade(event.target.value)}
-                  className="sm:w-48"
-                  aria-label={t('students.filter_grade')}
-                >
-                  <option value="">{t('students.grade_all')}</option>
-                  {courses.map((course) => (
-                    <option key={course.id} value={course.name}>
-                      {course.name}
-                    </option>
-                  ))}
-                </Select>
-              )}
             </div>
-
-            <div className="ed-toolbar__acciones">
-              {canExport && (
-                <>
-                  <Button
-                    variant="secondary"
-                    iconOnly
-                    onClick={() => void exportList('csv')}
-                    title={t('students.download_csv')}
-                    aria-label={t('students.download_csv')}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    iconOnly
-                    onClick={() => void exportList('xlsx')}
-                    title={t('students.download_xlsx')}
-                    aria-label={t('students.download_xlsx')}
-                  >
-                    <FileSpreadsheet className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-
-              {canImport && (
-                <Button
-                  variant="secondary"
-                  iconOnly
-                  onClick={openImport}
-                  title={t('students.upload')}
-                  aria-label={t('students.upload')}
-                >
-                  <Upload className="h-4 w-4" />
-                </Button>
-              )}
-
-              {props.canCreate && (
-                <Button iconOnly onClick={openNew} title={t('students.new')} aria-label={t('students.new')}>
-                  <Plus className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </>
-        }
-      />
+          }
+        />
+      </section>
 
       <StudentFormModal
         open={formOpen}
-        student={editing}
+        student={null}
         onClose={closeForm}
         onSaved={handleSaved}
+      />
+
+      <StudentDetailPanel
+        open={panelStudent !== null}
+        student={panelStudent}
+        mode={panelMode}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        refreshKey={refreshKey}
+        onClose={closePanel}
+        onEdit={backToEdit}
+        onCancelEdit={backToView}
+        onSavedEdit={handlePanelSaved}
+        onDeactivate={requestDeactivate}
+        onReactivate={requestReactivate}
       />
 
       <StudentImportModal
