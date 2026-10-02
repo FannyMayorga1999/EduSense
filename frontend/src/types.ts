@@ -231,3 +231,17 @@ export interface ImportResult {
   failed: number
   errors: string[]
 }
+
+/**
+ * A single node of the navigation tree served by GET /v1/menus. Nodes with
+ * children render as collapsible groups (or top-level sections); nodes with a
+ * route render as links. `label_key` is the i18n key of the label and `icon`
+ * a key of the frontend lucide catalogue.
+ */
+export interface MenuNode {
+  key: string
+  label_key: string
+  icon: string | null
+  route: string | null
+  children: MenuNode[]
+}

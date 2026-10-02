@@ -13,6 +13,7 @@ import ActiveFilters from '@/components/ui/ActiveFilters'
 import Badge from '@/components/ui/Badge'
 import Modal from '@/components/ui/Modal'
 import PaginatedTable from '@/components/ui/PaginatedTable'
+import Tooltip from '@/components/ui/Tooltip'
 
 /**
  * Students module view: filtered listing (search, status and grade), CRUD by
@@ -134,7 +135,11 @@ export default function StudentsListView(props: StudentsListViewProps) {
     {
       key: 'grade',
       header: t('students.table.grade'),
-      render: (student: StudentListItem) => <>{student.enrollments[0]?.course?.name ?? '—'}</>,
+      render: (student: StudentListItem) => {
+        const course = student.enrollments[0]?.course?.name
+
+        return course !== undefined ? <Badge tone="teal">{course}</Badge> : <span>—</span>
+      },
     },
     {
       key: 'birth_date',
@@ -152,51 +157,55 @@ export default function StudentsListView(props: StudentsListViewProps) {
       key: 'actions',
       header: t('students.table.actions'),
       render: (student: StudentListItem) => (
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => openView(student)}
-            title={t('students.actions.view')}
-            aria-label={t('students.actions.view')}
-            className="ed-item-accion"
-          >
-            <Eye className="h-4 w-4" />
-          </button>
-
-          {canEdit && (
+        <div className="flex items-center gap-1">
+          <Tooltip label={t('students.actions.view')}>
             <button
               type="button"
-              onClick={() => openEdit(student)}
-              title={t('students.actions.edit')}
-              aria-label={t('students.actions.edit')}
+              onClick={() => openView(student)}
+              aria-label={t('students.actions.view')}
               className="ed-item-accion"
             >
-              <Pencil className="h-4 w-4" />
+              <Eye className="h-4 w-4" />
             </button>
+          </Tooltip>
+
+          {canEdit && (
+            <Tooltip label={t('students.actions.edit')}>
+              <button
+                type="button"
+                onClick={() => openEdit(student)}
+                aria-label={t('students.actions.edit')}
+                className="ed-item-accion"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            </Tooltip>
           )}
 
           {student.is_active && canDelete && (
-            <button
-              type="button"
-              onClick={() => requestDeactivate(student)}
-              title={t('students.actions.deactivate')}
-              aria-label={t('students.actions.deactivate')}
-              className="ed-item-accion ed-item-accion--peligro"
-            >
-              <UserX className="h-4 w-4" />
-            </button>
+            <Tooltip label={t('students.actions.deactivate')}>
+              <button
+                type="button"
+                onClick={() => requestDeactivate(student)}
+                aria-label={t('students.actions.deactivate')}
+                className="ed-item-accion ed-item-accion--peligro"
+              >
+                <UserX className="h-4 w-4" />
+              </button>
+            </Tooltip>
           )}
 
           {!student.is_active && canEdit && (
-            <button
-              type="button"
-              onClick={() => requestReactivate(student)}
-              title={t('students.actions.reactivate')}
-              aria-label={t('students.actions.reactivate')}
-              className="ed-item-accion ed-item-accion--ok"
-            >
-              <UserCheck className="h-4 w-4" />
-            </button>
+            <Tooltip label={t('students.actions.reactivate')}>
+              <button
+                type="button"
+                onClick={() => requestReactivate(student)}
+                aria-label={t('students.actions.reactivate')}
+                className="ed-item-accion ed-item-accion--ok"
+              >
+                <UserCheck className="h-4 w-4" />
+              </button>
+            </Tooltip>
           )}
         </div>
       ),

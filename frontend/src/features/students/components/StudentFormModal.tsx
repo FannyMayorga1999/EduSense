@@ -30,6 +30,7 @@ export default function StudentFormModal({
       open={open}
       onClose={onClose}
       title={t(student === null ? 'students.form.create_title' : 'students.form.edit_title')}
+      subtitle={t('students.form.subtitle')}
       size="wide"
     >
       <StudentForm student={student} onSaved={onSaved} onCancel={onClose} />

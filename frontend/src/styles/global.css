@@ -1,3 +1,87 @@
+/* ============================================================
+ * EduSense design tokens.
+ * Altura semantic colors están reflejados en tailwind.config.js
+ * (primary-600 = #0F9D8A). Usa estas variables en el kit ed-*.
+ * @author Fanny Mayorga | @date 27-09-2026
+ * ============================================================ */
+:root {
+  /* ----- Colores primarios y de marca ----- */
+  --primary: #0f9d8a;
+  --primary-hover: #0c8575;
+  --primary-dark: #0b6c60;
+  --primary-light: #e6f7f4;
+  --primary-focus: rgba(15, 157, 138, 0.2);
+
+  /* ----- Estados y alertas ----- */
+  --danger: #dc2626;
+
+  /* ----- Tooltips (azul oscuro) ----- */
+  --tooltip-bg: #1e3a5f;
+
+  /* ----- Fondos y superficies ----- */
+  --bg-main: #f4f6f8;
+  --bg-surface: #ffffff;
+  --bg-subtle: #fafafa;
+  --border-color: #e2e8f0;
+
+  /* ----- Texto ----- */
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --text-disabled: #94a3b8;
+
+  /* ----- Estados y badges ----- */
+  --status-active-bg: #d1fae5;
+  --status-active-text: #065f46;
+  --status-inactive-bg: #f1f5f9;
+  --status-inactive-text: #475569;
+
+  /* ----- Espaciado ----- */
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /* ----- Radios de borde ----- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* ----- Sombras y elevación ----- */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* ----- Layout: ancho del sidebar ----- */
+  --sidebar-w: 18rem;
+  --sidebar-w-reducido: 5rem;
+
+  --transition-fast: all 0.2s ease-in-out;
+}
+
+/*
+ * Dark mode values: mantiene los grises stone que el sistema ya usaba
+ * (stone-900 fondo, stone-800 superficie, stone-700 bordes).
+ */
+.dark {
+  --bg-main: #1c1917;
+  --bg-surface: #292524;
+  --bg-subtle: #1c1917;
+  --border-color: #44403c;
+  --text-main: #fafaf9;
+  --text-muted: #d6d3d1;
+  --text-disabled: #a8a29e;
+  --primary-light: rgba(15, 157, 138, 0.16);
+  --primary-focus: rgba(15, 157, 138, 0.35);
+  --status-active-bg: rgba(16, 185, 129, 0.16);
+  --status-active-text: #6ee7b7;
+  --status-inactive-bg: #44403c;
+  --status-inactive-text: #a8a29e;
+  --primary-dark: #d1fae5;
+}
+
 @layer components {
   /* ============================================================
    * EduSense UI kit — global semantic classes.
@@ -41,7 +125,20 @@
   }
 
   .ed-btn--primary {
-    @apply bg-primary-600 text-white shadow-sm hover:bg-primary-700 focus-visible:outline-primary-600 dark:bg-primary-500 dark:hover:bg-primary-600;
+    background-color: var(--primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    color: #ffffff;
+    transition: var(--transition-fast);
+  }
+
+  .ed-btn--primary:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+  }
+
+  .ed-btn--primary:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 
   .ed-btn--secondary {
@@ -74,12 +171,18 @@
 
   /* ---------- CARDS ---------- */
   .ed-card {
-    @apply rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-700 dark:bg-stone-800;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
   }
 
   /* ---------- SECTIONS (filters / active filters / table) ---------- */
   .ed-panel {
-    @apply rounded-2xl border border-stone-200 bg-white shadow-sm dark:border-stone-700 dark:bg-stone-800;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
   }
 
   .ed-panel--filtros {
@@ -113,39 +216,56 @@
 
   /* ---------- TABLES ---------- */
   .ed-table {
-    @apply min-w-full w-full text-left text-sm text-stone-700 dark:text-stone-200;
+    min-width: 100%;
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+    color: var(--text-main);
   }
 
   .ed-table__thead {
-    @apply bg-stone-50 dark:bg-stone-900;
+    background-color: var(--bg-main);
   }
 
   .ed-table__th {
-    @apply px-4 py-3 text-left font-semibold text-stone-600 dark:text-stone-300;
+    padding: var(--space-sm) var(--space-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-muted);
   }
 
   .ed-table__row {
-    @apply border-t border-stone-200 transition-colors hover:bg-stone-50 dark:border-stone-700 dark:hover:bg-stone-700/40;
+    transition: background-color 150ms ease;
+  }
+
+  .ed-table__row:hover {
+    background-color: var(--primary-light);
   }
 
   .ed-table__td {
-    @apply whitespace-nowrap px-4 py-3;
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
   }
 
   .ed-table__td--envuelve {
-    @apply whitespace-normal;
+    white-space: normal;
   }
 
   .ed-table__td--acciones {
-    @apply whitespace-nowrap text-right;
+    white-space: nowrap;
+    text-align: right;
   }
 
   .ed-table__resalto {
-    @apply font-medium text-stone-900 dark:text-white;
+    font-weight: 500;
+    color: var(--text-main);
   }
 
   .ed-table__secundario {
-    @apply text-stone-600 dark:text-stone-300;
+    color: var(--text-muted);
   }
 
   .ed-skeleton {
@@ -161,15 +281,34 @@
   }
 
   .ed-item-accion {
-    @apply rounded-lg border border-stone-200 p-1.5 text-stone-500 transition hover:bg-stone-100 hover:text-primary-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-stone-700 dark:text-stone-400 dark:hover:bg-stone-700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2rem;
+    width: 2rem;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: var(--transition-fast);
+  }
+
+  .ed-item-accion:hover:not(:disabled) {
+    background-color: var(--primary-light);
+    color: var(--primary);
+  }
+
+  .ed-item-accion:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 
   .ed-item-accion--peligro {
-    @apply hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/60 dark:hover:text-rose-400;
+    @apply border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 dark:border-rose-500/40 dark:bg-rose-950/60 dark:text-rose-400 dark:hover:bg-rose-900/60 dark:hover:text-rose-300;
   }
 
   .ed-item-accion--ok {
-    @apply hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-950/60 dark:hover:text-emerald-400;
+    @apply border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 hover:text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-950/60 dark:text-emerald-400 dark:hover:bg-emerald-900/60 dark:hover:text-emerald-300;
   }
 
   .ed-accion-texto {
@@ -219,11 +358,117 @@
   }
 
   .ed-field {
-    @apply space-y-1.5;
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .ed-field__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
   }
 
   .ed-field__label {
-    @apply block text-sm font-medium text-stone-700 dark:text-stone-300;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .ed-field__help {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  .ed-field__help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.25rem;
+    width: 1.25rem;
+    border-radius: 50%;
+    color: var(--text-disabled);
+    transition: var(--transition-fast);
+  }
+
+  .ed-field__help-btn:hover,
+  .ed-field__help-btn:focus-visible {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    outline: none;
+  }
+
+  .ed-field__tooltip {
+    position: absolute;
+    bottom: calc(100% + var(--space-xs));
+    left: 0;
+    z-index: 30;
+    width: max-content;
+    max-width: 15rem;
+    border-radius: var(--radius-md);
+    padding: var(--space-xs) var(--space-sm);
+    background-color: var(--tooltip-bg);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+    box-shadow: var(--shadow-card);
+  }
+
+  .ed-field__tooltip::after {
+    content: '';
+    position: absolute;
+    left: var(--space-sm);
+    bottom: -4px;
+    height: 8px;
+    width: 8px;
+    background-color: var(--tooltip-bg);
+    transform: rotate(45deg);
+    border-bottom-right-radius: 1px;
+  }
+
+  .ed-field__help:hover .ed-field__tooltip,
+  .ed-field__help:focus-within .ed-field__tooltip {
+    opacity: 1;
+  }
+
+  .ed-tooltip {
+    display: inline-flex;
+    position: relative;
+  }
+
+  .ed-tooltip__burbuja {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 60;
+    width: max-content;
+    max-width: 16rem;
+    border-radius: var(--radius-md);
+    padding: var(--space-xs) var(--space-sm);
+    background-color: var(--tooltip-bg);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    transform: translate(0, calc(-100% - var(--space-xs)));
+    box-shadow: var(--shadow-card);
+    pointer-events: none;
+  }
+
+  .ed-tooltip__burbuja::after {
+    content: '';
+    position: absolute;
+    left: var(--space-sm);
+    bottom: -4px;
+    height: 8px;
+    width: 8px;
+    background-color: var(--tooltip-bg);
+    transform: rotate(45deg);
+    border-radius: 1px;
   }
 
   .ed-field__ayuda {
@@ -235,28 +480,86 @@
   }
 
   .ed-seccion {
-    @apply text-sm font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400;
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   .ed-malla {
-    @apply grid grid-cols-1 gap-4 sm:grid-cols-2;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-lg);
   }
 
   .ed-malla--tres {
     @apply lg:grid-cols-3;
   }
 
+  .ed-malla--dos {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+
+  @media (min-width: 640px) {
+    .ed-malla--dos {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   /* ---------- INPUTS / SELECTS / CHECKBOX / TEXTAREA ---------- */
-  .ed-input {
-    @apply w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 placeholder-stone-400 shadow-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-900 dark:text-white dark:placeholder-stone-500;
+  .ed-input,
+  .ed-select,
+  .ed-textarea,
+  .ed-multiselect__trigger {
+    width: 100%;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm) var(--space-md);
+    font-size: 0.875rem;
+    color: var(--text-main);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+  }
+
+  .dark .ed-input,
+  .dark .ed-select,
+  .dark .ed-textarea,
+  .dark .ed-multiselect__trigger {
+    background-color: var(--bg-subtle);
+  }
+
+  .ed-input:focus,
+  .ed-select:focus,
+  .ed-textarea:focus,
+  .ed-multiselect__trigger:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-focus);
+    outline: none;
+  }
+
+  .ed-input::placeholder,
+  .ed-textarea::placeholder {
+    color: var(--text-disabled);
   }
 
   .ed-select {
-    @apply w-full appearance-none rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 pr-9 text-sm text-stone-900 shadow-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-900 dark:text-white;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19 9-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-sm) center;
+    background-size: 1rem 1rem;
+    padding-right: var(--space-xl);
   }
 
-  .ed-textarea {
-    @apply w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-stone-900 shadow-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-900 dark:text-white;
+  .ed-multiselect__trigger {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    cursor: pointer;
   }
 
   .ed-checkbox {
@@ -266,10 +569,6 @@
   /* ---------- MULTISELECT / CHIPS ---------- */
   .ed-multiselect {
     @apply relative;
-  }
-
-  .ed-multiselect__trigger {
-    @apply flex min-h-11 w-full cursor-pointer items-center rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 shadow-sm transition focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 dark:border-stone-700 dark:bg-stone-900 dark:text-white;
   }
 
   .ed-multiselect__contenido {
@@ -381,6 +680,15 @@
     @apply w-full sm:w-auto;
   }
 
+  .ed-acciones--fijo {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background-color: var(--bg-surface);
+    border-top-left-radius: var(--radius-md);
+    border-top-right-radius: var(--radius-md);
+  }
+
   .ed-pista {
     @apply text-xs font-medium text-stone-500 dark:text-stone-400;
   }
@@ -395,11 +703,23 @@
   }
 
   .ed-modal__panel {
-    @apply relative w-full rounded-2xl border border-stone-200 bg-white shadow-xl dark:border-stone-700 dark:bg-stone-800;
+    @apply relative w-full rounded-2xl border border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-800;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-modal);
   }
 
   .ed-modal__header {
-    @apply flex items-center justify-between gap-4 border-b border-stone-200 px-4 py-3.5 dark:border-stone-700 sm:px-5 sm:py-4;
+    @apply flex items-start justify-between gap-4 border-b border-stone-200 px-4 py-3.5 dark:border-stone-700 sm:px-5 sm:py-4;
+  }
+
+  .ed-modal__head {
+    @apply min-w-0 flex-1;
+  }
+
+  .ed-modal__subtitle {
+    margin-top: var(--space-2xs);
+    font-size: 0.85rem;
+    color: var(--text-muted);
   }
 
   .ed-modal__title {

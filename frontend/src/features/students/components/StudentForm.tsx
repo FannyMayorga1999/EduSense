@@ -2,18 +2,20 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
-import { Check, ChevronLeft, ChevronRight, Save } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Save, UserRound } from 'lucide-react'
 import {
   createStudent,
   fetchStudent,
   updateStudent,
 } from '@/features/students/services/students.service'
 import { fetchCourses, fetchTerms } from '@/features/academic'
+import { documentTypeTone } from '@/features/students/utils/documentType'
 import type { AcademicResource, Student, StudentDetail, StudentForm } from '@/types'
 import Field from '@/components/ui/Field'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
 
 /**
  * 4-step form to create/edit a student (identification, current academic
@@ -113,6 +115,12 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
   const [submitting, setSubmitting] = useState<boolean>(false)
 
   const isEditing = student !== null
+
+  const nombreEnVivo = `${form.first_name} ${form.last_name}`.trim()
+  const iniciales =
+    `${form.first_name?.[0] ?? ''}${form.last_name?.[0] ?? ''}`.trim().toUpperCase()
+  const nombreResumen =
+    nombreEnVivo !== '' ? nombreEnVivo : t(isEditing ? 'students.form.edit_title' : 'students.form.create_title')
 
   useEffect(() => {
     let cancelled = false
@@ -269,58 +277,66 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
     }
   }
 
-  const steps = [
-    t('students.form.wizard_step_1'),
-    t('students.form.wizard_step_2'),
-    t('students.form.wizard_step_3'),
-    t('students.form.wizard_step_4'),
-  ]
-
   return (
     <form className="ed-form" onSubmit={(event) => void submit(event)}>
-      {/* Stepper */}
       {!isSections && (
-        <nav className="ed-stepper" aria-label={t('students.form.wizard_label')}>
-          {steps.map((label, index) => {
-            const completed = index < step
-            const active = index === step
-
-            return (
-              <div key={label} className="ed-stepper__paso" aria-current={active ? 'step' : undefined}>
-                {completed ? (
-                  <button
-                    type="button"
-                    onClick={() => setStep(index)}
-                    title={`${t('students.form.go_to')} ${label}`}
-                    aria-label={`${t('students.form.go_to')} ${label}`}
-                    className="ed-stepper__cabeza ed-stepper__cabeza--hecho"
-                  >
-                    <Check className="h-4 w-4" />
-                  </button>
+        <>
+          {/* Entity summary */}
+          <div className="ed-resumen">
+            <span className="ed-resumen__avatar" aria-hidden="true">
+              {iniciales !== '' ? iniciales : <UserRound className="h-7 w-7" />}
+            </span>
+            <div className="ed-resumen__info">
+              <span className="ed-resumen__nombre">{nombreResumen}</span>
+              <div className="ed-resumen__badges">
+                <Badge tone={documentTypeTone(form.document_type)}>
+                  {t(`students.form.document_type_${form.document_type}`)}
+                </Badge>
+                {form.is_active ? (
+                  form.academic_status === 'graduated' ? (
+                    <Badge tone="sky">{t('students.form.academic_status_graduated')}</Badge>
+                  ) : form.academic_status === 'retired' ? (
+                    <Badge tone="amber">{t('students.form.academic_status_retired')}</Badge>
+                  ) : (
+                    <Badge tone="emerald">{t('students.form.academic_status_active')}</Badge>
+                  )
                 ) : (
-                  <span
-                    className={`ed-stepper__cabeza ${
-                      active ? 'ed-stepper__cabeza--activo' : 'ed-stepper__cabeza--pendiente'
-                    }`}
-                    aria-hidden="true"
-                  >
-                    {index + 1}
-                  </span>
-                )}
-                <span
-                  className={`ed-stepper__etiqueta ${
-                    active ? 'ed-stepper__etiqueta--activo' : 'ed-stepper__etiqueta--pendiente'
-                  }`}
-                >
-                  {label}
-                </span>
-                {index < TOTAL_STEPS - 1 && (
-                  <div className="ed-stepper__barra" aria-hidden="true" />
+                  <Badge tone="stone">{t('students.form.academic_status_inactive')}</Badge>
                 )}
               </div>
-            )
-          })}
-        </nav>
+            </div>
+          </div>
+
+          {/* Linear progress bar */}
+          <div
+            className="ed-progress"
+            role="progressbar"
+            aria-label={t('students.form.wizard_label')}
+            aria-valuemin={1}
+            aria-valuemax={TOTAL_STEPS}
+            aria-valuenow={step + 1}
+          >
+            <div className="ed-progress__track" aria-hidden="true">
+              {Array.from({ length: TOTAL_STEPS }, (_, index) => (
+                <div
+                  key={index}
+                  className={`ed-progress__segmento ${index <= step ? 'ed-progress__segmento--activo' : ''}`}
+                />
+              ))}
+            </div>
+            <div className="ed-progress__meta" aria-live="polite">
+              <span>
+                {t('students.form.step_of', { actual: step + 1, total: TOTAL_STEPS })} ·{' '}
+                {t(`students.form.wizard_step_${step + 1}`)}
+              </span>
+              <span className="ed-progress__porcentaje">
+                {t('students.form.progress_percent', {
+                  percent: Math.round(((step + 1) / TOTAL_STEPS) * 100),
+                })}
+              </span>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Step 1: identification */}
@@ -330,10 +346,12 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             {t('students.form.section_identification')}
           </h3>
 
-          <div className="ed-malla ed-malla--tres">
+          <div className="ed-malla ed-malla--dos">
             <Field
               label={t('students.form.document_type')}
               htmlFor="document_type"
+              help={t('students.form.document_type_help')}
+              hint={t('students.form.document_type_help')}
               error={fieldErrors['student.document_type']}
             >
               <Select
@@ -352,6 +370,7 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.document_number')}
               htmlFor="document_number"
+              help={t('students.form.document_hint')}
               hint={t('students.form.document_hint')}
               error={fieldErrors['student.document_number']}
             >
@@ -367,6 +386,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.gender')}
               htmlFor="gender"
+              help={t('students.form.gender_help')}
+              hint={t('students.form.gender_help')}
               error={fieldErrors['student.gender']}
             >
               <Select
@@ -386,6 +407,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.first_name')}
               htmlFor="first_name"
+              help={t('students.form.first_name_help')}
+              hint={t('students.form.first_name_help')}
               error={fieldErrors['student.first_name']}
             >
               <Input
@@ -399,6 +422,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.last_name')}
               htmlFor="last_name"
+              help={t('students.form.last_name_help')}
+              hint={t('students.form.last_name_help')}
               error={fieldErrors['student.last_name']}
             >
               <Input
@@ -412,6 +437,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.birth_date')}
               htmlFor="birth_date"
+              help={t('students.form.birth_date_help')}
+              hint={t('students.form.birth_date_help')}
               error={fieldErrors['student.birth_date']}
             >
               <Input
@@ -433,10 +460,12 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             {t('students.form.section_academic')}
           </h3>
 
-          <div className="ed-malla ed-malla--tres">
+          <div className="ed-malla ed-malla--dos">
             <Field
               label={t('students.form.course')}
               htmlFor="course_id"
+              help={t('students.form.course_help')}
+              hint={t('students.form.course_help')}
               error={fieldErrors['student.course_id']}
             >
               <Select id="course_id" value={form.course_id} onChange={(event) => updateField('course_id', event.target.value)}>
@@ -449,7 +478,12 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
               </Select>
             </Field>
 
-            <Field label={t('students.form.parallel')} htmlFor="parallel">
+            <Field
+              label={t('students.form.parallel')}
+              htmlFor="parallel"
+              help={t('students.form.parallel_help')}
+              hint={t('students.form.parallel_help')}
+            >
               <Input
                 id="parallel"
                 value={form.parallel}
@@ -461,6 +495,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.termino')}
               htmlFor="term_id"
+              help={t('students.form.termino_help')}
+              hint={t('students.form.termino_help')}
               error={fieldErrors['student.term_id']}
             >
               <Select id="term_id" value={form.term_id} onChange={(event) => updateField('term_id', event.target.value)}>
@@ -476,6 +512,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.academic_status')}
               htmlFor="academic_status"
+              help={t('students.form.academic_status_help')}
+              hint={t('students.form.academic_status_help')}
               error={fieldErrors['student.academic_status']}
             >
               <Select
@@ -501,10 +539,12 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             {t('students.form.section_contact')}
           </h3>
 
-          <div className="ed-malla ed-malla--tres">
+          <div className="ed-malla ed-malla--dos">
             <Field
               label={t('students.form.representative_name')}
               htmlFor="representative_name"
+              help={t('students.form.representative_name_help')}
+              hint={t('students.form.representative_name_help')}
             >
               <Input
                 id="representative_name"
@@ -516,6 +556,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.representative_relation')}
               htmlFor="representative_relation"
+              help={t('students.form.representative_relation_help')}
+              hint={t('students.form.representative_relation_help')}
             >
               <Input
                 id="representative_relation"
@@ -528,6 +570,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.contact_phone')}
               htmlFor="contact_phone"
+              help={t('students.form.contact_phone_help')}
+              hint={t('students.form.contact_phone_help')}
             >
               <Input
                 id="contact_phone"
@@ -539,6 +583,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.contact_email')}
               htmlFor="contact_email"
+              help={t('students.form.contact_email_help')}
+              hint={t('students.form.contact_email_help')}
               error={fieldErrors['student.contact_email']}
             >
               <Input
@@ -552,6 +598,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.home_address')}
               htmlFor="home_address"
+              help={t('students.form.home_address_help')}
+              hint={t('students.form.home_address_help')}
             >
               <Input
                 id="home_address"
@@ -582,10 +630,12 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             {t('students.form.section_health')}
           </h3>
 
-          <div className="ed-malla">
+          <div className="ed-malla ed-malla--dos">
             <Field
               label={t('students.form.laterality')}
               htmlFor="laterality"
+              help={t('students.form.laterality_help')}
+              hint={t('students.form.laterality_help')}
               error={fieldErrors['student.laterality']}
             >
               <Select
@@ -605,6 +655,8 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
             <Field
               label={t('students.form.medical_conditions')}
               htmlFor="medical_conditions"
+              help={t('students.form.medical_conditions_help')}
+              hint={t('students.form.medical_conditions_help')}
               error={fieldErrors['student.medical_conditions']}
             >
               <textarea
@@ -620,20 +672,14 @@ export default function StudentForm({ student, onSaved, onCancel, variant = 'wiz
         </div>
       )}
 
-      {!isSections && (
-        <p className="ed-pista" aria-live="polite">
-          {t('students.form.step_of', { actual: step + 1, total: TOTAL_STEPS })}
-        </p>
-      )}
-
       {generalError !== null && (
         <p className="ed-alerta">
           {generalError}
         </p>
       )}
 
-      <div className="ed-acciones ed-acciones--entre">
-        <Button variant="ghost" type="button" onClick={onCancel} className="ed-acciones__ancho">
+      <div className="ed-acciones ed-acciones--entre ed-acciones--fijo">
+        <Button variant="secondary" type="button" onClick={onCancel} className="ed-acciones__ancho">
           {t('students.confirm.cancel')}
         </Button>
 

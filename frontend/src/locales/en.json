@@ -2,7 +2,7 @@
   "translation": {
     "app": {
       "name": "EduSense",
-      "tagline": "Academic psycho-pedagogical system",
+      "tagline": "Psycho-pedagogical system",
       "dark_mode": "Dark mode",
       "light_mode": "Light mode",
       "language": "Language"
@@ -20,12 +20,27 @@
       "students": "Students",
       "terms": "Academic years",
       "surveys": "Surveys",
-      "schedule": "Schedule"
+      "schedule": "Schedule",
+      "section_general": "General",
+      "section_academic": "Academic",
+      "section_evaluation": "Evaluation",
+      "section_system": "System",
+      "settings": "Settings",
+      "users": "Users",
+      "roles": "Roles",
+      "ajustes": "Preferences",
+      "profile": "Profile"
     },
     "sidebar": {
       "open": "Open menu",
       "close": "Close menu",
+      "collapse": "Collapse menu",
+      "expand": "Expand menu",
       "role": "Role"
+    },
+    "user": {
+      "menu_label": "User menu",
+      "sign_out": "Sign out"
     },
     "placeholder": {
       "title": "Under construction",
@@ -182,6 +197,25 @@
         "medical_conditions": "Medical conditions or previous diagnoses",
         "medical_conditions_placeholder": "Describe allergies, diagnoses, treatments or health observations...",
         "placeholder_select": "Select an option",
+        "subtitle": "Complete the student data step by step.",
+        "progress_percent": "{{percent}}%",
+        "edit_name": "Edit name",
+        "document_type_help": "Official student identification document.",
+        "gender_help": "Gender the student identifies with.",
+        "first_name_help": "Names as they appear on the identity document.",
+        "last_name_help": "Last names as they appear on the identity document.",
+        "birth_date_help": "Date of birth; used to calculate the age.",
+        "course_help": "Current enrollment level, grade or course.",
+        "parallel_help": "Letter or name of the course parallel.",
+        "termino_help": "Academic term in which the student enrolls.",
+        "academic_status_help": "Current academic situation of the student.",
+        "representative_name_help": "Name of the responsible adult or legal representative.",
+        "representative_relation_help": "Representative's relationship to the student.",
+        "contact_phone_help": "Phone for direct contact or emergencies.",
+        "contact_email_help": "Email for tutoring or representation notifications.",
+        "home_address_help": "Student's home address.",
+        "laterality_help": "Handedness preference for teaching purposes.",
+        "medical_conditions_help": "Allergies, diagnoses, treatments or health observations.",
         "section_identification": "Identification data",
         "section_academic": "Current academic information",
         "section_contact": "Contact and legal representative data",

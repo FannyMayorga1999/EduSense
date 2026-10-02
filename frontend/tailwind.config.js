@@ -11,18 +11,20 @@ export default {
       },
       colors: {
         // Paleta educativa verde/teal: primary (teal) y accent (emerald).
+        // primary-600 (#0F9D8A) y primary-700 (#0C8575) son la marca;
+        // primary-50 (#E6F7F4) es el fondo suave (badges/tabs/hover).
         primary: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
-          950: '#042f2e',
+          50: '#e6f7f4',
+          100: '#ccf0ea',
+          200: '#a0e2d8',
+          300: '#6ccbbd',
+          400: '#40b6a5',
+          500: '#1da894',
+          600: '#0f9d8a',
+          700: '#0c8575',
+          800: '#0b6c60',
+          900: '#0d4f47',
+          950: '#04302b',
         },
         accent: {
           50: '#ecfdf5',

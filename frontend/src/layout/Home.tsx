@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Languages, Menu, Moon, Sun } from 'lucide-react'
+import { Languages, Menu, Moon, PanelLeftClose, PanelLeftOpen, Sun } from 'lucide-react'
 import Sidebar from '@/layout/Sidebar'
+import UserMenu from '@/layout/UserMenu'
 import { useDarkMode } from '@/hooks/useTheme'
 import { RequireAuth } from '@/features/system/auth'
 
@@ -17,14 +18,20 @@ function Home() {
   const { t, i18n } = useTranslation()
   const { dark, toggle } = useDarkMode()
   const [menuOpen, setMenuOpen] = useState<boolean>(false)
+  const [collapsed, setCollapsed] = useState<boolean>(false)
 
   const toggleLanguage = (): void => {
     void i18n.changeLanguage(i18n.language === 'es' ? 'en' : 'es')
   }
 
   return (
-    <div className="ed-shell">
-      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+    <div className={`ed-shell ${collapsed ? 'ed-shell--reducido' : ''}`}>
+      <Sidebar
+        open={menuOpen}
+        collapsed={collapsed}
+        onClose={() => setMenuOpen(false)}
+        onToggleCollapse={() => setCollapsed((prev) => !prev)}
+      />
 
       <div className="ed-shell__cuerpo">
         <header className="ed-shell__header">
@@ -37,6 +44,15 @@ function Home() {
                 className="ed-shell__icon-btn lg:hidden"
               >
                 <Menu className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setCollapsed((prev) => !prev)}
+                title={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
+                aria-label={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
+                className="ed-shell__icon-btn hidden lg:flex"
+              >
+                {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
               </button>
               <div className="ed-shell__marca">
                 <p className="ed-shell__title">{t('app.name')}</p>
@@ -65,6 +81,8 @@ function Home() {
               >
                 {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
+
+              <UserMenu />
             </div>
           </div>
         </header>

@@ -8,6 +8,8 @@ import { formatDate } from '@/utils/format'
 import SidePanel from '@/components/ui/SidePanel'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import Tooltip from '@/components/ui/Tooltip'
+import { documentTypeTone } from '@/features/students/utils/documentType'
 import StudentForm from '@/features/students/components/StudentForm'
 
 /**
@@ -144,15 +146,27 @@ export default function StudentDetailPanel({
 
         {canDelete && student !== null ? (
           active ? (
-            <Button size="sm" variant="secondary" onClick={() => onDeactivate(student)}>
-              <UserX className="h-4 w-4" />
-              {t('students.actions.deactivate')}
-            </Button>
+            <Tooltip label={t('students.actions.deactivate')}>
+              <button
+                type="button"
+                onClick={() => onDeactivate(student)}
+                aria-label={t('students.actions.deactivate')}
+                className="ed-item-accion ed-item-accion--peligro"
+              >
+                <UserX className="h-4 w-4" />
+              </button>
+            </Tooltip>
           ) : (
-            <Button size="sm" variant="secondary" onClick={() => onReactivate(student)}>
-              <UserCheck className="h-4 w-4" />
-              {t('students.actions.reactivate')}
-            </Button>
+            <Tooltip label={t('students.actions.reactivate')}>
+              <button
+                type="button"
+                onClick={() => onReactivate(student)}
+                aria-label={t('students.actions.reactivate')}
+                className="ed-item-accion ed-item-accion--ok"
+              >
+                <UserCheck className="h-4 w-4" />
+              </button>
+            </Tooltip>
           )
         ) : null}
       </>
@@ -186,26 +200,44 @@ export default function StudentDetailPanel({
       )
     }
 
+    const iniciales =
+      `${detail.first_name?.[0] ?? ''}${detail.last_name?.[0] ?? ''}`.trim().toUpperCase() || '?'
+
     return (
       <div className="space-y-6">
         <header className="ed-detalle__hero">
-          <h3 className="text-xl font-bold text-stone-900 dark:text-white">
-            {detail.full_name}
-          </h3>
-          <div className="ed-detalle__badges">
-            <CondicionBadge
-              academicStatus={detail.academic_status}
-              active={detail.is_active}
-              t={t}
-            />
+          <span className="ed-detalle__avatar" aria-hidden="true">
+            {iniciales}
+          </span>
+          <div className="ed-detalle__identificacion">
+            <h3 className="ed-detalle__nombre">{detail.full_name}</h3>
+            <div className="ed-detalle__badges">
+              <CondicionBadge
+                academicStatus={detail.academic_status}
+                active={detail.is_active}
+                t={t}
+              />
+              {currentEnrollment !== undefined &&
+                currentEnrollment.course !== null && (
+                  <Badge tone="teal">
+                    {currentEnrollment.course.name}
+                    {currentEnrollment.parallel !== null && currentEnrollment.parallel !== undefined
+                      ? ` · ${currentEnrollment.parallel}`
+                      : ''}
+                  </Badge>
+                )}
+            </div>
           </div>
         </header>
 
-        <section aria-label={t('students.form.section_identification')}>
+        <div className="ed-detalle__tarjetas">
+          <section className="ed-detalle__tarjeta" aria-label={t('students.form.section_identification')}>
           <h4 className="ed-seccion">{t('students.form.section_identification')}</h4>
           <div className="ed-detalle__grilla">
             <Campo label={t('students.form.document_type')}>
-              {t(`students.form.document_type_${detail.document_type}`)}
+              <Badge tone={documentTypeTone(detail.document_type)}>
+                {t(`students.form.document_type_${detail.document_type}`)}
+              </Badge>
             </Campo>
             <Campo label={t('students.form.document_number')}>
               {detail.document_number}
@@ -219,7 +251,7 @@ export default function StudentDetailPanel({
           </div>
         </section>
 
-        <section aria-label={t('students.form.section_academic')}>
+        <section className="ed-detalle__tarjeta" aria-label={t('students.form.section_academic')}>
           <h4 className="ed-seccion">{t('students.form.section_academic')}</h4>
           <div className="ed-detalle__grilla">
             <Campo label={t('students.table.grade')}>
@@ -252,7 +284,7 @@ export default function StudentDetailPanel({
           )}
         </section>
 
-        <section aria-label={t('students.form.section_contact')}>
+        <section className="ed-detalle__tarjeta" aria-label={t('students.form.section_contact')}>
           <h4 className="ed-seccion">{t('students.form.section_contact')}</h4>
           <div className="ed-detalle__grilla">
             <Campo label={t('students.form.representative_name')}>
@@ -278,7 +310,7 @@ export default function StudentDetailPanel({
           </div>
         </section>
 
-        <section aria-label={t('students.form.section_health')}>
+        <section className="ed-detalle__tarjeta" aria-label={t('students.form.section_health')}>
           <h4 className="ed-seccion">{t('students.form.section_health')}</h4>
           <div className="ed-detalle__grilla">
             <Campo label={t('students.form.laterality')}>
@@ -293,7 +325,10 @@ export default function StudentDetailPanel({
         </section>
 
         {detail.enrollments.length > 1 && (
-          <section aria-label={t('students.detail.section_enrollments')}>
+          <section
+            className="ed-detalle__tarjeta ed-detalle__tarjeta--ancha"
+            aria-label={t('students.detail.section_enrollments')}
+          >
             <h4 className="ed-seccion">{t('students.detail.section_enrollments')}</h4>
             <ul className="ed-detalle__lista">
               {detail.enrollments.map((enrollment) => (
@@ -312,6 +347,7 @@ export default function StudentDetailPanel({
             </ul>
           </section>
         )}
+        </div>
       </div>
     )
   }

@@ -2,7 +2,7 @@
   "translation": {
     "app": {
       "name": "EduSense",
-      "tagline": "Sistema académico psicopedagógico",
+      "tagline": "Sistema Psicopedagógico",
       "dark_mode": "Modo oscuro",
       "light_mode": "Modo claro",
       "language": "Idioma"
@@ -20,12 +20,27 @@
       "students": "Estudiantes",
       "terms": "Años lectivos",
       "surveys": "Encuestas",
-      "schedule": "Cronograma"
+      "schedule": "Cronograma",
+      "section_general": "General",
+      "section_academic": "Académico",
+      "section_evaluation": "Evaluación",
+      "section_system": "Sistema",
+      "settings": "Configuración",
+      "users": "Usuarios",
+      "roles": "Roles",
+      "ajustes": "Ajustes",
+      "profile": "Perfil"
     },
     "sidebar": {
       "open": "Abrir menú",
       "close": "Cerrar menú",
+      "collapse": "Colapsar menú",
+      "expand": "Expandir menú",
       "role": "Rol"
+    },
+    "user": {
+      "menu_label": "Menú de usuario",
+      "sign_out": "Cerrar sesión"
     },
     "placeholder": {
       "title": "En construcción",
@@ -182,6 +197,25 @@
         "medical_conditions": "Condiciones médicas o diagnósticos previos",
         "medical_conditions_placeholder": "Describe alergias, diagnósticos, tratamientos u observaciones de salud...",
         "placeholder_select": "Selecciona una opción",
+        "subtitle": "Completa los datos del estudiante paso a paso.",
+        "progress_percent": "{{percent}}%",
+        "edit_name": "Editar nombre",
+        "document_type_help": "Documento oficial de identidad del estudiante.",
+        "gender_help": "Género con el que el estudiante se identifica.",
+        "first_name_help": "Nombres tal como aparecen en el documento de identidad.",
+        "last_name_help": "Apellidos tal como aparecen en el documento de identidad.",
+        "birth_date_help": "Fecha de nacimiento; se usa para calcular la edad.",
+        "course_help": "Nivel, grado o curso actual de matrícula.",
+        "parallel_help": "Letra o nombre del paralelo del curso.",
+        "termino_help": "Período lectivo en el que se matricula.",
+        "academic_status_help": "Situación académica actual del estudiante.",
+        "representative_name_help": "Nombre del adulto responsable o representante legal.",
+        "representative_relation_help": "Parentesco del representante con el estudiante.",
+        "contact_phone_help": "Teléfono para contacto directo o emergencias.",
+        "contact_email_help": "Correo para notificaciones de tutoría o representación.",
+        "home_address_help": "Dirección del domicilio del estudiante.",
+        "laterality_help": "Preferencia manual para fines pedagógicos.",
+        "medical_conditions_help": "Alergias, diagnósticos, tratamientos u observaciones de salud.",
         "section_identification": "Datos de identificación",
         "section_academic": "Información académica actual",
         "section_contact": "Datos de contacto y representante legal",

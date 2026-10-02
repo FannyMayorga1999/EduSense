@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\System\Http\Controllers\Api\AuthController;
+use App\Modules\System\Http\Controllers\Api\MenuController;
 use App\Modules\System\Http\Controllers\Api\PermissionController;
 use App\Modules\System\Http\Controllers\Api\RoleController;
 use App\Modules\System\Http\Controllers\Api\UserController;
@@ -23,6 +24,7 @@ Route::get('csrf-cookie', fn () => response()->json(['success' => true, 'message
 Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('system.logout');
     Route::get('me', [AuthController::class, 'me'])->name('system.me');
+    Route::get('menus', [MenuController::class, 'index'])->name('system.menus.index');
 
     Route::get('permissions', [PermissionController::class, 'index'])
         ->middleware('permission:manage_roles|view_users')

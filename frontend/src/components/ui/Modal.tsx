@@ -14,11 +14,19 @@ interface ModalProps {
   open: boolean
   onClose: () => void
   title: string
+  subtitle?: string
   size?: 'md' | 'lg' | 'xl' | 'wide'
   children: ReactNode
 }
 
-export default function Modal({ open, onClose, title, size = 'md', children }: ModalProps) {
+export default function Modal({
+  open,
+  onClose,
+  title,
+  subtitle,
+  size = 'md',
+  children,
+}: ModalProps) {
   useEffect(() => {
     if (!open) {
       return
@@ -49,7 +57,12 @@ export default function Modal({ open, onClose, title, size = 'md', children }: M
 
       <div className={`ed-modal__panel ed-modal__panel--${size}`}>
         <div className="ed-modal__header">
-          <h2 className="ed-modal__title">{title}</h2>
+          <div className="ed-modal__head">
+            <h2 className="ed-modal__title">{title}</h2>
+            {subtitle !== undefined && (
+              <p className="ed-modal__subtitle">{subtitle}</p>
+            )}
+          </div>
           <button
             type="button"
             onClick={onClose}
