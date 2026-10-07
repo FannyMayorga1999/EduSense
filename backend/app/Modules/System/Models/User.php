@@ -2,8 +2,8 @@
 
 namespace App\Modules\System\Models;
 
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Models\EvaluationResponse;
-use App\Modules\Students\Models\Student;
 use Database\Factories\Modules\System\Models\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;

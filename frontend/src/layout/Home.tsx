@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Languages, Menu, Moon, PanelLeftClose, PanelLeftOpen, Sun } from 'lucide-react'
 import Sidebar from '@/layout/Sidebar'
 import UserMenu from '@/layout/UserMenu'
-import { useDarkMode } from '@/hooks/useTheme'
+import { useDarkMode } from '@/shared/hooks/useTheme'
 import { RequireAuth } from '@/features/system/auth'
 
 /**

@@ -6,7 +6,7 @@ use App\Modules\Academic\Enums\EnrollmentStatus;
 use App\Modules\Academic\Models\AcademicTerm;
 use App\Modules\Academic\Models\Course;
 use App\Modules\Academic\Models\Enrollment;
-use App\Modules\Students\Models\Student;
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

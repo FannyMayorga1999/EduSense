@@ -2,6 +2,7 @@
 
 namespace App\Modules\Psychopedagogic\Services;
 
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Enums\DiagnosticSeverity;
 use App\Modules\Psychopedagogic\Enums\EvaluationArea;
 use App\Modules\Psychopedagogic\Enums\PlanStatus;
@@ -13,7 +14,6 @@ use App\Modules\Psychopedagogic\Models\NeeCategory;
 use App\Modules\Psychopedagogic\Models\PsychopedagogicRecord;
 use App\Modules\Psychopedagogic\Models\Question;
 use App\Modules\Psychopedagogic\Models\Survey;
-use App\Modules\Students\Models\Student;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 

@@ -26,3 +26,14 @@ The system SHALL support creation and management of surveys for psychopedagogic 
 #### Scenario: Create survey
 - **WHEN** authorized user creates a survey
 - **THEN** the system SHALL store survey configuration and be available for use
+
+### Requirement: System manages NEE categories
+The system SHALL support special educational needs (NEE) categorization for students.
+
+#### Scenario: Assign NEE category
+- **WHEN** personnel assign a special educational needs category to a student
+- **THEN** the system SHALL categorize and persist the assignment
+
+#### Scenario: List NEE categories
+- **WHEN** an authorized user requests NEE categories
+- **THEN** the system SHALL return the available special educational needs categories

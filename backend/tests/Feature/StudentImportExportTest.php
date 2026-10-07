@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Modules\Academic\Models\AcademicTerm;
 use App\Modules\Academic\Models\Course;
-use App\Modules\Students\Models\Student;
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\System\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

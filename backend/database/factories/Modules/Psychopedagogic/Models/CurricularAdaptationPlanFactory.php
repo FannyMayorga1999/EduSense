@@ -2,9 +2,9 @@
 
 namespace Database\Factories\Modules\Psychopedagogic\Models;
 
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Enums\PlanStatus;
 use App\Modules\Psychopedagogic\Models\CurricularAdaptationPlan;
-use App\Modules\Students\Models\Student;
 use App\Modules\System\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

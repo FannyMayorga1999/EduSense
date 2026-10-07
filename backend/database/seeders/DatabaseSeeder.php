@@ -8,6 +8,7 @@ use App\Modules\Academic\Models\Course;
 use App\Modules\Academic\Models\Enrollment;
 use App\Modules\Academic\Models\Grade;
 use App\Modules\Academic\Models\Subject;
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Enums\EvaluationArea;
 use App\Modules\Psychopedagogic\Models\Activity;
 use App\Modules\Psychopedagogic\Models\EvaluationResponse;
@@ -15,7 +16,6 @@ use App\Modules\Psychopedagogic\Models\InterventionSchedule;
 use App\Modules\Psychopedagogic\Models\Question;
 use App\Modules\Psychopedagogic\Models\Survey;
 use App\Modules\Psychopedagogic\Services\PsychopedagogicEvaluationService;
-use App\Modules\Students\Models\Student;
 use App\Modules\System\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -301,10 +301,19 @@ class DatabaseSeeder extends Seeder
 
         $course = $courses->first();
 
+        $parallels = ['A', 'B', 'A', 'B', null, 'A'];
+
         foreach ($students as $index => $student) {
-            Enrollment::query()->firstOrCreate(
+            $parallel = $parallels[$index] ?? null;
+
+            Enrollment::query()->updateOrCreate(
                 ['student_id' => $student->id, 'term_id' => $term->id],
-                ['course_id' => $course->id, 'status' => 'active', 'enrolled_at' => now()->toDateString()],
+                [
+                    'course_id' => $course->id,
+                    'parallel' => $parallel,
+                    'status' => 'active',
+                    'enrolled_at' => now()->toDateString(),
+                ],
             );
 
             $subjects = Subject::query()->where('course_id', $course->id)->get();

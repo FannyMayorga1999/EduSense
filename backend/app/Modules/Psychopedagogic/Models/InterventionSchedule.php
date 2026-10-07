@@ -3,8 +3,8 @@
 namespace App\Modules\Psychopedagogic\Models;
 
 use App\Modules\Academic\Models\Subject;
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Enums\ScheduleStatus;
-use App\Modules\Students\Models\Student;
 use Database\Factories\Modules\Psychopedagogic\Models\InterventionScheduleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -1,12 +1,12 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BellRing, Eye, EyeOff } from 'lucide-react'
+import { BellRing, Eye, EyeOff, LogIn } from 'lucide-react'
 import { DEMO_ACCOUNTS } from '@/features/system/auth/hooks/useLogin'
 import type { DemoAccount } from '@/features/system/auth/hooks/useLogin'
-import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
-import Field from '@/components/ui/Field'
-import Input from '@/components/ui/Input'
+import Button from '@/shared/components/ui/Button'
+import Card from '@/shared/components/ui/Card'
+import Field from '@/shared/components/ui/Field'
+import Input from '@/shared/components/ui/Input'
 
 /**
  * Presentational login form: credentials, error alert and the demo accounts
@@ -20,7 +20,6 @@ interface LoginFormProps {
   password: string
   showPassword: boolean
   submitting: boolean
-  error: string | null
   showDemo: boolean
   onEmailChange: (value: string) => void
   onPasswordChange: (value: string) => void
@@ -35,7 +34,6 @@ export default function LoginForm({
   password,
   showPassword,
   submitting,
-  error,
   showDemo,
   onEmailChange,
   onPasswordChange,
@@ -52,12 +50,11 @@ export default function LoginForm({
         <Field label={t('login.email')} htmlFor="email">
           <Input
             id="email"
-            type="email"
+            type="text"
             autoComplete="email"
             placeholder={t('login.email_placeholder')}
             value={email}
             onChange={(event) => onEmailChange(event.target.value)}
-            required
           />
         </Field>
 
@@ -71,7 +68,6 @@ export default function LoginForm({
               value={password}
               onChange={(event) => onPasswordChange(event.target.value)}
               className="pr-12"
-              required
             />
             <button
               type="button"
@@ -85,13 +81,8 @@ export default function LoginForm({
           </div>
         </Field>
 
-        {error !== null && (
-          <p className="ed-alerta">
-            {error}
-          </p>
-        )}
-
         <Button type="submit" className="ed-login__submit" loading={submitting}>
+          {!submitting && <LogIn className="h-4 w-4" />}
           {submitting ? t('login.submitting') : t('login.submit')}
         </Button>
       </form>

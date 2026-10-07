@@ -2,7 +2,7 @@
 
 namespace App\Modules\Psychopedagogic\Models;
 
-use App\Modules\Students\Models\Student;
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\System\Models\User;
 use Database\Factories\Modules\Psychopedagogic\Models\EvaluationResponseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

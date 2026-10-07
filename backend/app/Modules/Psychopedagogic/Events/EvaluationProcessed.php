@@ -2,8 +2,8 @@
 
 namespace App\Modules\Psychopedagogic\Events;
 
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Models\Survey;
-use App\Modules\Students\Models\Student;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;

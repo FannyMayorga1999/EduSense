@@ -2,10 +2,10 @@
 
 namespace Database\Factories\Modules\Psychopedagogic\Models;
 
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Enums\ScheduleStatus;
 use App\Modules\Psychopedagogic\Models\Activity;
 use App\Modules\Psychopedagogic\Models\InterventionSchedule;
-use App\Modules\Students\Models\Student;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

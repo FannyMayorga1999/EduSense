@@ -36,8 +36,8 @@ The system SHALL allow bulk importing student records via import functionality.
 - **THEN** the system SHALL create multiple student records
 
 ### Requirement: System displays student details
-The system SHALL allow viewing detailed student information in a side panel view.
+The system SHALL allow viewing detailed student information in a detail drawer.
 
 #### Scenario: View student details
 - **WHEN** a user selects a student from the list
-- **THEN** the system SHALL display detailed student information in a side panel
+- **THEN** the system SHALL display detailed student information in a detail drawer

@@ -1,4 +1,4 @@
-import Placeholder from '@/components/Placeholder'
+import Placeholder from '@/shared/components/ui/Placeholder'
 
 /**
  * Thin page for the "/surveys" route (module pending).

@@ -113,11 +113,16 @@
     letter-spacing: 0.02em;
   }
 
-  /* ---------- SIDE PANEL DETAIL ---------- */
+  /* ---------- EXPANDED ROW DETAIL ---------- */
+  .ed-expanded {
+    @apply space-y-5 p-4 sm:p-5;
+  }
+
   .ed-detalle__hero {
     display: flex;
     align-items: center;
     gap: var(--space-md);
+    flex-wrap: wrap;
   }
 
   .ed-detalle__avatar {

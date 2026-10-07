@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next'
-import { CheckCircle2, Pencil, Plus, Trash2 } from 'lucide-react'
+import { CheckCircle2, Pencil, Plus, Save, Trash2, X } from 'lucide-react'
 import type { useTerms } from '@/features/academic/hooks/useTerms'
-import { formatDate } from '@/utils/format'
+import { formatDate } from '@/shared/utils/format'
 import type { AcademicTerm } from '@/types'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import Field from '@/components/ui/Field'
-import Badge from '@/components/ui/Badge'
-import Modal from '@/components/ui/Modal'
-import PaginatedTable from '@/components/ui/PaginatedTable'
+import Button from '@/shared/components/ui/Button'
+import Input from '@/shared/components/ui/Input'
+import Field from '@/shared/components/ui/Field'
+import Badge from '@/shared/components/ui/Badge'
+import Modal from '@/shared/components/ui/Modal'
+import PaginatedTable from '@/shared/components/ui/PaginatedTable'
 
 /**
  * Academic terms administration view (school years): paginated listing,
@@ -55,7 +55,6 @@ export default function TermsTable(props: TermsTableProps) {
     cancelDelete,
     confirmingDelete,
     confirmDelete,
-    banner,
   } = props
 
   const columns = [
@@ -142,12 +141,6 @@ export default function TermsTable(props: TermsTableProps) {
         <p className="ed-page__subtitle">{t('periods.subtitle')}</p>
       </div>
 
-      {banner !== null && (
-        <div role="status" aria-live="polite" className={`ed-banner ed-banner--${banner.type}`}>
-          {banner.text}
-        </div>
-      )}
-
       <PaginatedTable
         data={data}
         loading={loading}
@@ -179,20 +172,33 @@ export default function TermsTable(props: TermsTableProps) {
         }
       />
 
-      <Modal
-        open={formOpen}
-        onClose={closeForm}
-        title={t(editing !== null ? 'periods.form.title_edit' : 'periods.form.title_create')}
-        size="wide"
-      >
-        <form className="ed-form" onSubmit={(event) => void submit(event)}>
+      <div>
+        <Modal
+          open={formOpen}
+          onClose={closeForm}
+          title={t(editing !== null ? 'periods.form.title_edit' : 'periods.form.title_create')}
+          size="wide"
+          as="form"
+          onSubmit={(event) => void submit(event)}
+          footer={
+            <div className="ed-acciones ed-acciones--simple">
+              <Button variant="secondary" type="button" onClick={closeForm} className="ed-acciones__ancho">
+                <X className="h-4 w-4" />
+                {t('periods.confirm.cancel')}
+              </Button>
+              <Button type="submit" loading={submitting} className="ed-acciones__ancho">
+                <Save className="h-4 w-4" />
+                {submitting ? t('periods.form.saving') : t('periods.form.save')}
+              </Button>
+            </div>
+          }
+        >
           <Field label={t('periods.form.name')} htmlFor="term_name" error={fieldErrors.name}>
             <Input
               id="term_name"
               value={form.name}
               onChange={(event) => updateField('name', event.target.value)}
               placeholder="2026-2027"
-              required
             />
           </Field>
 
@@ -203,7 +209,6 @@ export default function TermsTable(props: TermsTableProps) {
                 type="date"
                 value={form.start_date}
                 onChange={(event) => updateField('start_date', event.target.value)}
-                required
               />
             </Field>
 
@@ -213,7 +218,6 @@ export default function TermsTable(props: TermsTableProps) {
                 type="date"
                 value={form.end_date}
                 onChange={(event) => updateField('end_date', event.target.value)}
-                required
               />
             </Field>
           </div>
@@ -229,38 +233,35 @@ export default function TermsTable(props: TermsTableProps) {
           </label>
 
           <p className="ed-pista">{t('periods.form.is_current_help')}</p>
+        </Modal>
 
-          <div className="ed-acciones ed-acciones--fin">
-            <Button variant="secondary" type="button" onClick={closeForm} className="ed-acciones__ancho">
-              {t('periods.confirm.cancel')}
-            </Button>
-            <Button type="submit" loading={submitting} className="ed-acciones__ancho">
-              {submitting ? t('periods.form.saving') : t('periods.form.save')}
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      <Modal
-        open={deleting !== null}
-        onClose={cancelDelete}
-        title={t('periods.confirm.delete_title')}
-      >
-        <div className="space-y-5">
+        <Modal
+          open={deleting !== null}
+          onClose={cancelDelete}
+          title={t('periods.confirm.delete_title')}
+          footer={
+            <div className="ed-acciones ed-acciones--simple">
+              <Button variant="secondary" onClick={cancelDelete} className="ed-acciones__ancho">
+                <X className="h-4 w-4" />
+                {t('periods.confirm.cancel')}
+              </Button>
+              <Button
+                variant="danger"
+                loading={confirmingDelete}
+                onClick={() => void confirmDelete()}
+                className="ed-acciones__ancho"
+              >
+                <Trash2 className="h-4 w-4" />
+                {confirmingDelete ? t('periods.confirm.executing') : t('periods.confirm.confirm')}
+              </Button>
+            </div>
+          }
+        >
           <p className="text-sm leading-relaxed text-stone-600 dark:text-stone-300">
             {t('periods.confirm.delete_message', { name: deleting?.name ?? '' })}
           </p>
-
-          <div className="ed-acciones ed-acciones--simple">
-            <Button variant="secondary" onClick={cancelDelete}>
-              {t('periods.confirm.cancel')}
-            </Button>
-            <Button variant="danger" loading={confirmingDelete} onClick={() => void confirmDelete()}>
-              {confirmingDelete ? t('periods.confirm.executing') : t('periods.confirm.confirm')}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        </Modal>
+      </div>
     </section>
   )
 }

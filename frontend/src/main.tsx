@@ -5,13 +5,16 @@ import './index.css'
 import './i18n'
 import App from '@/App'
 import { AuthProvider } from '@/features/system/auth'
+import { AlertProvider } from '@/shared/components/ui/Alert'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <AlertProvider>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </AlertProvider>
     </BrowserRouter>
   </StrictMode>,
 )

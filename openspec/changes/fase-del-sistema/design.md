@@ -32,7 +32,7 @@ See proposal.md - Why. This documents a comprehensive architectural evolution of
 - **Alternatives Considered**: Page-based only (rejected - mixes concerns), atomic design only (rejected - less domain-centric)
 
 ### Decision 3: Shared UI Component Library
-- **Choice**: Centralize reusable components in src/components/ui/ (Modal, Input, Field, Tooltip, MultiSelect, SidePanel, etc.)
+- **Choice**: Centralize reusable components in src/shared/components/ui/ (Button, Card, Field, Input, Modal, MultiSelect, PaginatedTable, Tooltip, Alert, StatusBadge, etc.)
 - **Rationale**: Promotes consistency, reusability, and maintainable styling
 - **Alternatives Considered**: Component-per-feature (rejected - duplication), external UI library (rejected - custom design needs)
 
@@ -48,7 +48,7 @@ See proposal.md - Why. This documents a comprehensive architectural evolution of
 
 ## Risks / Trade-offs
 
-- [Risk: Module coupling] ? Mitigation: Use well-defined interfaces, services per feature, avoid cross-module tight coupling
-- [Risk: Migration complexity] ? Mitigation: Maintain backward compatibility where possible, comprehensive feature tests
-- [Risk: Database-driven menus add query overhead] ? Mitigation: Cache menu structure if needed, keep hierarchy shallow
-- [Risk: Feature-based structure may scatter shared utilities] ? Mitigation: Keep shared utilities in src/utils/, src/hooks/, src/services/ at top level
+- [Risk: Module coupling] Mitigation: Use well-defined interfaces, services per feature, avoid cross-module tight coupling
+- [Risk: Migration complexity] Mitigation: Maintain backward compatibility where possible, comprehensive feature tests
+- [Risk: Database-driven menus add query overhead] Mitigation: Cache menu structure if needed, keep hierarchy shallow
+- [Risk: Feature-based structure may scatter shared utilities] Mitigation: Keep shared utilities in src/shared/ (components, hooks, utils)

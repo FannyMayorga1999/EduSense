@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
 import { useAuth } from '@/features/system/auth/hooks/useAuth'
-import Spinner from '@/components/ui/Spinner'
+import Spinner from '@/shared/components/ui/Spinner'
 
 /**
  * Route guard: shows a spinner while the session is restored and redirects

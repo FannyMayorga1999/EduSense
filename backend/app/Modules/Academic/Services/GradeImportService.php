@@ -5,7 +5,7 @@ namespace App\Modules\Academic\Services;
 use App\Modules\Academic\Models\AcademicTerm;
 use App\Modules\Academic\Models\Grade;
 use App\Modules\Academic\Models\Subject;
-use App\Modules\Students\Models\Student;
+use App\Modules\Academic\Submodules\Students\Models\Student;
 
 /**
  * Bulk grade import from a CSV matrix.

@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import Card from '@/components/ui/Card'
+import Card from '@/shared/components/ui/Card'
 
 /**
  * KPI card of the psychopedagogic dashboard.

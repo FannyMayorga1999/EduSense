@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Models\Question;
 use App\Modules\Psychopedagogic\Models\Survey;
-use App\Modules\Students\Models\Student;
 use App\Modules\System\Models\Role;
 use App\Modules\System\Models\User;
 use Database\Seeders\RolePermissionSeeder;

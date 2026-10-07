@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { isAxiosError } from 'axios'
 import { useAuth } from '@/features/system/auth/hooks/useAuth'
 import { createTerm, deleteTerm, fetchTermsPaginated, updateTerm } from '@/features/academic/services/academic.service'
-import usePagination from '@/hooks/usePagination'
+import usePagination from '@/shared/hooks/usePagination'
+import { useAlert } from '@/shared/components/ui/alertContext'
 import type { AcademicTerm, TermForm } from '@/types'
 
 /**
  * Academic terms module hook: owns the paginated listing, the create/edit
- * form, the "set as current" action, the delete confirmation and the
- * transient banners. The page delegates all the state here and the table
- * component only renders it.
+ * form, the "set as current" action and the delete confirmation. Feedback is
+ * delegated to the shared alert queue. The page delegates all the state here
+ * and the table component only renders it.
  *
  * @author Fanny Mayorga | @date 20-09-2026
  */
@@ -23,9 +24,17 @@ const EMPTY_FORM: TermForm = {
   is_current: false,
 }
 
+/** Maps a server-side validation field to the label shown in the alert. */
+const FIELD_LABELS: Record<string, string> = {
+  name: 'periods.form.name',
+  start_date: 'periods.form.start_date',
+  end_date: 'periods.form.end_date',
+}
+
 export function useTerms() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const { push } = useAlert()
 
   const isAdmin = user?.roles.includes('administrator') ?? false
   const can = (permission: string): boolean =>
@@ -49,18 +58,6 @@ export function useTerms() {
   const [deleting, setDeleting] = useState<AcademicTerm | null>(null)
   const [confirmingDelete, setConfirmingDelete] = useState<boolean>(false)
   const [settingCurrent, setSettingCurrent] = useState<number | null>(null)
-
-  const [banner, setBanner] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
-
-  useEffect(() => {
-    if (banner === null) {
-      return
-    }
-
-    const id = window.setTimeout(() => setBanner(null), 5000)
-
-    return () => window.clearTimeout(id)
-  }, [banner])
 
   const openNew = useCallback((): void => {
     setEditing(null)
@@ -99,24 +96,35 @@ export function useTerms() {
     event.preventDefault()
 
     const errors: Record<string, string> = {}
+    const missing: string[] = []
 
     if (form.name.trim() === '') {
       errors.name = t('periods.form.required')
+      missing.push(t('periods.form.name'))
     }
 
     if (form.start_date === '') {
       errors.start_date = t('periods.form.required')
+      missing.push(t('periods.form.start_date'))
     }
 
     if (form.end_date === '') {
       errors.end_date = t('periods.form.required')
+      missing.push(t('periods.form.end_date'))
     } else if (form.start_date !== '' && form.end_date < form.start_date) {
       errors.end_date = t('periods.form.end_after_start')
+      missing.push(t('periods.form.end_date'))
     }
+
+    const missingLabels = missing
 
     setFieldErrors(errors)
 
     if (Object.keys(errors).length > 0) {
+      push(t('periods.messages.missing_fields', { fields: missingLabels.join(', ') }), {
+        variant: 'info-needed',
+      })
+
       return
     }
 
@@ -125,10 +133,10 @@ export function useTerms() {
     try {
       if (editing !== null) {
         const updated = await updateTerm(editing.id, form)
-        setBanner({ type: 'ok', text: t('periods.messages.updated', { name: updated.name }) })
+        push(t('periods.messages.updated', { name: updated.name }), { variant: 'completed' })
       } else {
         const created = await createTerm(form)
-        setBanner({ type: 'ok', text: t('periods.messages.created', { name: created.name }) })
+        push(t('periods.messages.created', { name: created.name }), { variant: 'completed' })
       }
 
       setFormOpen(false)
@@ -139,15 +147,28 @@ export function useTerms() {
 
         if (details !== undefined) {
           const mapped: Record<string, string> = {}
+          const labels: string[] = []
 
           for (const [field, messages] of Object.entries(details)) {
             mapped[field] = messages[0]
+
+            const labelKey = FIELD_LABELS[field]
+
+            if (labelKey !== undefined) {
+              labels.push(t(labelKey))
+            }
           }
 
           setFieldErrors(mapped)
+
+          if (labels.length > 0) {
+            push(t('periods.messages.missing_fields', { fields: labels.join(', ') }), {
+              variant: 'info-needed',
+            })
+          }
         }
       } else {
-        setBanner({ type: 'error', text: t('periods.messages.error_generic') })
+        push(t('periods.messages.error_generic'), { variant: 'error' })
       }
     } finally {
       setSubmitting(false)
@@ -159,10 +180,10 @@ export function useTerms() {
 
     try {
       await updateTerm(term.id, { is_current: true })
-      setBanner({ type: 'ok', text: t('periods.messages.current_set', { name: term.name }) })
+      push(t('periods.messages.current_set', { name: term.name }), { variant: 'completed' })
       pagination.reload()
     } catch {
-      setBanner({ type: 'error', text: t('periods.messages.error_generic') })
+      push(t('periods.messages.error_generic'), { variant: 'error' })
     } finally {
       setSettingCurrent(null)
     }
@@ -185,14 +206,14 @@ export function useTerms() {
 
     try {
       await deleteTerm(deleting.id)
-      setBanner({ type: 'ok', text: t('periods.messages.deleted', { name: deleting.name }) })
+      push(t('periods.messages.deleted', { name: deleting.name }), { variant: 'completed' })
       setDeleting(null)
       pagination.reload()
     } catch (reason) {
       if (isAxiosError(reason) && reason.response?.status === 422) {
-        setBanner({ type: 'error', text: t('periods.messages.delete_blocked') })
+        push(t('periods.messages.delete_blocked'), { variant: 'info-needed' })
       } else {
-        setBanner({ type: 'error', text: t('periods.messages.error_generic') })
+        push(t('periods.messages.error_generic'), { variant: 'error' })
       }
 
       setDeleting(null)
@@ -233,6 +254,5 @@ export function useTerms() {
     cancelDelete,
     confirmingDelete,
     confirmDelete,
-    banner,
   }
 }

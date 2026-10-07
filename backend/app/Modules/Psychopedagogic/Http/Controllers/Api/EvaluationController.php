@@ -3,12 +3,12 @@
 namespace App\Modules\Psychopedagogic\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Administration\Services\AuditService;
 use App\Modules\Psychopedagogic\Http\Requests\EvaluateStudentRequest;
 use App\Modules\Psychopedagogic\Models\EvaluationResponse;
 use App\Modules\Psychopedagogic\Models\Survey;
 use App\Modules\Psychopedagogic\Services\PsychopedagogicEvaluationService;
-use App\Modules\Students\Models\Student;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

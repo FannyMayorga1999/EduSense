@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BookOpenCheck, ClipboardCheck, GraduationCap, Languages, LineChart, Moon, Sun, Users } from 'lucide-react'
 import { LoginForm, useAuth, useLogin } from '@/features/system/auth'
-import { useDarkMode } from '@/hooks/useTheme'
+import { useDarkMode } from '@/shared/hooks/useTheme'
 
 /**
  * Authentication page (public home) of EduSense. Thin view: only assembles
@@ -115,7 +115,6 @@ export default function LoginPage() {
             password={login.password}
             showPassword={login.showPassword}
             submitting={login.submitting}
-            error={login.error}
             showDemo={login.showDemo}
             onEmailChange={login.setEmail}
             onPasswordChange={login.setPassword}

@@ -106,7 +106,10 @@
       "role_admin": "Administrador",
       "role_teacher": "Docente",
       "role_psychopedagogist": "Psicopedagoga",
-      "role_evaluator": "Docente evaluador"
+      "role_evaluator": "Docente evaluador",
+      "messages": {
+        "welcome": "Bienvenido a EduSense."
+      }
     },
     "home": {
       "logout": "Cerrar sesión",
@@ -130,6 +133,7 @@
       "upload": "Subir CSV",
       "download_csv": "Descargar CSV",
       "download_xlsx": "Descargar Excel",
+      "download_selection": "Descargar seleccionados",
       "table": {
         "document": "Documento",
         "full_name": "Nombre completo",
@@ -137,23 +141,36 @@
         "birth_date": "Nacimiento",
         "status": "Estado",
         "actions": "Acciones",
-        "empty": "No hay estudiantes que coincidan con los filtros"
+        "empty": "No hay estudiantes que coincidan con los filtros",
+        "expand": "Ver detalle",
+        "collapse": "Ocultar detalle",
+        "parallel": "Paralelo"
       },
       "actions": {
         "edit": "Editar estudiante",
         "deactivate": "Desactivar estudiante",
         "reactivate": "Reactivar estudiante",
-        "view": "Ver"
+        "view": "Ver",
+        "view_detail": "Ver detalles"
       },
       "detail": {
-        "title": "Información del estudiante",
+        "title": "Detalles del Estudiante",
         "edit": "Editar",
         "close": "Cerrar",
+        "back": "Volver a detalles",
         "tutor": "Tutor (responsable)",
         "records_count": "Registros psicopedagógicos",
         "diagnostics_count": "Diagnósticos",
         "interventions_count": "Planes de intervención",
-        "section_enrollments": "Historial de matrículas"
+        "section_enrollments": "Historial de matrículas",
+        "personal_info": "Información Personal",
+        "contact_info": "Información de Contacto",
+        "academic_info": "Información Académica",
+        "representative": "Representante Legal",
+        "health_info": "Información de Salud",
+        "change_title": "¿Cambiar estado del estudiante?",
+        "change_message": "El estado actual es {{current}}. ¿Deseas cambiarlo a {{new}}?",
+        "confirm_change": "Confirmar"
       },
       "form": {
         "create_title": "Nuevo estudiante",
@@ -267,7 +284,8 @@
         "file_required": "Selecciona un archivo CSV para continuar.",
         "enroll_incomplete": "Si vas a matricular, elige el curso y el período.",
         "error_validation": "Revisa el archivo: el formato no es válido.",
-        "error_generic": "No se pudo procesar la importación. Intenta de nuevo."
+        "error_generic": "No se pudo procesar la importación. Intenta de nuevo.",
+        "success": "Importación completada: {{count}} estudiante(s) creado(s)."
       },
       "messages": {
         "created": "Estudiante creado correctamente.",
@@ -277,7 +295,36 @@
         "export_error": "No se pudo generar la descarga. Intenta de nuevo.",
         "load_error": "No se pudieron cargar los estudiantes. Verifica el servidor.",
         "loading": "Cargando información…",
-        "error_generic": "Ocurrió un error. Intenta de nuevo."
+        "error_generic": "Ocurrió un error. Intenta de nuevo.",
+        "error_validation": "Revisa los datos marcados e intenta de nuevo.",
+        "error_unauthenticated": "Tu sesión expiró. Inicia sesión nuevamente.",
+        "error_forbidden": "No tienes permisos para guardar este estudiante.",
+        "error_expired": "La sesión del formulario expiró. Intenta de nuevo.",
+        "error_rate_limit": "Demasiados intentos seguidos. Espera un momento.",
+        "error_server": "El servidor no pudo procesar la solicitud. Intenta más tarde.",
+        "error_network": "No hay conexión con el servidor. Revisa tu red e intenta de nuevo.",
+        "bulk_parallel_updated": "Paralelo actualizado para {{count}} estudiantes",
+        "bulk_deactivated": "{{count}} estudiantes desactivados",
+        "bulk_reactivated": "{{count}} estudiantes reactivados"
+      },
+      "parallel_all": "Todos los paralelos",
+      "filter_parallel": "Filtrar por paralelo",
+      "parallel_undefined": "Por definir",
+      "bulk": {
+        "select_all": "Seleccionar todos",
+        "deselect_all": "Deseleccionar todos",
+        "selected_count": "{{count}} seleccionados",
+        "update_parallel": "Actualizar paralelo",
+        "update_parallel_title": "Actualizar paralelo",
+        "update_parallel_message": "Actualizar el paralelo de {{count}} estudiantes",
+        "parallel_placeholder": "Ingrese paralelo (ej: A, B, C)",
+        "activate": "Activar",
+        "deactivate": "Desactivar",
+        "activate_title": "Activar estudiantes",
+        "deactivate_title": "Desactivar estudiantes",
+        "activate_message": "Activar {{count}} estudiantes",
+        "deactivate_message": "Desactivar {{count}} estudiantes",
+        "clear_selection": "Limpiar selección"
       }
     },
     "periods": {
@@ -330,7 +377,40 @@
         "current_set": "{{name}} quedó marcado como período vigente.",
         "delete_blocked": "No se puede eliminar un período con matrículas o notas asociadas.",
         "load_error": "No se pudieron cargar los años lectivos. Verifica el servidor.",
-        "error_generic": "Ocurrió un error. Intenta de nuevo."
+        "error_generic": "Ocurrió un error. Intenta de nuevo.",
+        "missing_fields": "Completa los campos obligatorios: {{fields}}."
+      }
+    },
+    "alerts": {
+      "region": "Notificaciones",
+      "dismiss": "Cerrar notificación",
+      "variants": {
+        "info-needed": {
+          "title": "Falta información",
+          "subtitle": "Tu solicitud puede estar incompleta."
+        },
+        "completed": {
+          "title": "Tarea completada",
+          "subtitle": "Tu solicitud fue procesada correctamente."
+        },
+        "context-updated": {
+          "title": "Contexto actualizado",
+          "subtitle": "El contexto de la conversación ha cambiado."
+        },
+        "error": {
+          "title": "No se pudo completar la solicitud",
+          "subtitle": "Ocurrió un error."
+        }
+      },
+      "actions": {
+        "add_details": "Agregar detalles",
+        "see_missing": "Ver qué falta",
+        "review_output": "Revisar resultado",
+        "refine_result": "Refinar resultado",
+        "view_context": "Ver contexto",
+        "manage_memory": "Gestionar memoria",
+        "try_again": "Intentar de nuevo",
+        "learn_why": "Saber qué pasó"
       }
     }
   }

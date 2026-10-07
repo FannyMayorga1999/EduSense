@@ -2,10 +2,10 @@
 
 namespace Database\Factories\Modules\Psychopedagogic\Models;
 
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Enums\DiagnosticSeverity;
 use App\Modules\Psychopedagogic\Models\Diagnostic;
 use App\Modules\Psychopedagogic\Models\NeeCategory;
-use App\Modules\Students\Models\Student;
 use App\Modules\System\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

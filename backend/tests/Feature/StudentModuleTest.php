@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Modules\Academic\Models\AcademicTerm;
 use App\Modules\Academic\Models\Course;
 use App\Modules\Academic\Models\Enrollment;
-use App\Modules\Students\Models\Student;
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\System\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -174,6 +174,89 @@ class StudentModuleTest extends TestCase
             'parallel' => 'A',
             'status' => 'active',
         ]);
+    }
+
+    public function test_student_can_be_created_with_the_complete_form_payload(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        $course = Course::factory()->create();
+        $term = AcademicTerm::factory()->create();
+
+        $response = $this->postJson('/api/v1/students', [
+            'first_name' => 'Camila',
+            'last_name' => 'Mendoza',
+            'birth_date' => '2014-02-18',
+            'document_type' => 'cedula',
+            'document_number' => '1712345699',
+            'gender' => '',
+            'representative_name' => '',
+            'representative_relation' => '',
+            'contact_phone' => '',
+            'contact_email' => '',
+            'home_address' => '',
+            'laterality' => '',
+            'medical_conditions' => '',
+            'course_id' => (string) $course->id,
+            'term_id' => (string) $term->id,
+            'parallel' => '',
+            'academic_status' => 'active',
+            'is_active' => true,
+        ]);
+
+        $response->assertCreated();
+
+        $this->assertDatabaseHas('std_students', [
+            'first_name' => 'Camila',
+            'document_number' => '1712345699',
+        ]);
+
+        $this->assertDatabaseHas('aca_enrollments', [
+            'course_id' => $course->id,
+            'term_id' => $term->id,
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_creating_a_student_without_academic_data_skips_the_enrollment(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        $this->postJson('/api/v1/students', [
+            'first_name' => 'Mateo',
+            'last_name' => 'Reyes',
+            'birth_date' => '2016-04-04',
+            'document_type' => 'cedula',
+            'document_number' => '1712345697',
+            'course_id' => '',
+            'term_id' => '',
+            'parallel' => '',
+            'academic_status' => 'active',
+            'is_active' => true,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('std_students', ['document_number' => '1712345697']);
+        $this->assertDatabaseCount('aca_enrollments', 0);
+    }
+
+    public function test_a_term_without_a_course_is_rejected_with_a_field_error(): void
+    {
+        Sanctum::actingAs($this->admin);
+
+        $this->postJson('/api/v1/students', [
+            'first_name' => 'Sofia',
+            'last_name' => 'Nunez',
+            'birth_date' => '2015-06-06',
+            'document_type' => 'cedula',
+            'document_number' => '1712345698',
+            'course_id' => null,
+            'term_id' => AcademicTerm::factory()->create()->id,
+            'academic_status' => 'active',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('course_id');
+
+        // The transaction must roll the student back: no orphan record.
+        $this->assertDatabaseMissing('std_students', ['document_number' => '1712345698']);
     }
 
     public function test_retired_academic_status_updates_the_enrollment(): void

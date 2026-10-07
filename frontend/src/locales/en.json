@@ -106,7 +106,10 @@
       "role_admin": "Administrator",
       "role_teacher": "Teacher",
       "role_psychopedagogist": "Psychopedagogist",
-      "role_evaluator": "Teacher evaluator"
+      "role_evaluator": "Teacher evaluator",
+      "messages": {
+        "welcome": "Welcome to EduSense."
+      }
     },
     "home": {
       "logout": "Sign out",
@@ -130,6 +133,7 @@
       "upload": "Upload CSV",
       "download_csv": "Download CSV",
       "download_xlsx": "Download Excel",
+      "download_selection": "Download selected",
       "table": {
         "document": "Document",
         "full_name": "Full name",
@@ -137,23 +141,36 @@
         "birth_date": "Birth date",
         "status": "Status",
         "actions": "Actions",
-        "empty": "No students match the filters"
+        "empty": "No students match the filters",
+        "expand": "Show details",
+        "collapse": "Hide details",
+        "parallel": "Parallel"
       },
       "actions": {
         "edit": "Edit student",
         "deactivate": "Deactivate student",
         "reactivate": "Reactivate student",
-        "view": "View"
+        "view": "View",
+        "view_detail": "View details"
       },
       "detail": {
-        "title": "Student information",
+        "title": "Student Details",
         "edit": "Edit",
         "close": "Close",
+        "back": "Back to details",
         "tutor": "Tutor (responsible)",
         "records_count": "Psychopedagogic records",
         "diagnostics_count": "Diagnostics",
         "interventions_count": "Intervention plans",
-        "section_enrollments": "Enrollment history"
+        "section_enrollments": "Enrollment history",
+        "personal_info": "Personal Information",
+        "contact_info": "Contact Information",
+        "academic_info": "Academic Information",
+        "representative": "Legal Representative",
+        "health_info": "Health Information",
+        "change_title": "Change student status?",
+        "change_message": "The current status is {{current}}. Do you want to change it to {{new}}?",
+        "confirm_change": "Confirm"
       },
       "form": {
         "create_title": "New student",
@@ -267,7 +284,8 @@
         "file_required": "Select a CSV file to continue.",
         "enroll_incomplete": "If enrolling, choose the course and the term.",
         "error_validation": "Check the file: the format is not valid.",
-        "error_generic": "The import could not be processed. Try again."
+        "error_generic": "The import could not be processed. Try again.",
+        "success": "Import completed: {{count}} student(s) created."
       },
       "messages": {
         "created": "Student created successfully.",
@@ -277,7 +295,36 @@
         "export_error": "The download could not be generated. Try again.",
         "load_error": "Students could not be loaded. Check the server.",
         "loading": "Loading information…",
-        "error_generic": "Something went wrong. Try again."
+        "error_generic": "Something went wrong. Try again.",
+        "error_validation": "Review the highlighted fields and try again.",
+        "error_unauthenticated": "Your session expired. Please sign in again.",
+        "error_forbidden": "You do not have permission to save this student.",
+        "error_expired": "The form session expired. Please try again.",
+        "error_rate_limit": "Too many attempts in a row. Please wait a moment.",
+        "error_server": "The server could not process the request. Please try again later.",
+        "error_network": "Could not reach the server. Check your connection and try again.",
+        "bulk_parallel_updated": "Parallel updated for {{count}} students",
+        "bulk_deactivated": "{{count}} students deactivated",
+        "bulk_reactivated": "{{count}} students reactivated"
+      },
+      "parallel_all": "All parallels",
+      "filter_parallel": "Filter by parallel",
+      "parallel_undefined": "Undefined",
+      "bulk": {
+        "select_all": "Select all",
+        "deselect_all": "Deselect all",
+        "selected_count": "{{count}} selected",
+        "update_parallel": "Update parallel",
+        "update_parallel_title": "Update parallel",
+        "update_parallel_message": "Update the parallel for {{count}} students",
+        "parallel_placeholder": "Enter parallel (e.g., A, B, C)",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "activate_title": "Activate students",
+        "deactivate_title": "Deactivate students",
+        "activate_message": "Activate {{count}} students",
+        "deactivate_message": "Deactivate {{count}} students",
+        "clear_selection": "Clear selection"
       }
     },
     "periods": {
@@ -330,7 +377,40 @@
         "current_set": "{{name}} is now the current period.",
         "delete_blocked": "A period with enrollments or grades cannot be deleted.",
         "load_error": "Academic years could not be loaded. Check the server.",
-        "error_generic": "Something went wrong. Try again."
+        "error_generic": "Something went wrong. Try again.",
+        "missing_fields": "Complete the required fields: {{fields}}."
+      }
+    },
+    "alerts": {
+      "region": "Notifications",
+      "dismiss": "Dismiss notification",
+      "variants": {
+        "info-needed": {
+          "title": "More information needed",
+          "subtitle": "Your request may be incomplete."
+        },
+        "completed": {
+          "title": "Task completed",
+          "subtitle": "Your request was processed successfully."
+        },
+        "context-updated": {
+          "title": "Context updated",
+          "subtitle": "Your conversation context has changed."
+        },
+        "error": {
+          "title": "Unable to complete request",
+          "subtitle": "Something went wrong."
+        }
+      },
+      "actions": {
+        "add_details": "Add details",
+        "see_missing": "See what's missing",
+        "review_output": "Review output",
+        "refine_result": "Refine result",
+        "view_context": "View context",
+        "manage_memory": "Manage memory",
+        "try_again": "Try again",
+        "learn_why": "Learn why this happened"
       }
     }
   }

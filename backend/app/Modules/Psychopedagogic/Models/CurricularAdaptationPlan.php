@@ -2,8 +2,8 @@
 
 namespace App\Modules\Psychopedagogic\Models;
 
+use App\Modules\Academic\Submodules\Students\Models\Student;
 use App\Modules\Psychopedagogic\Enums\PlanStatus;
-use App\Modules\Students\Models\Student;
 use App\Modules\System\Models\User;
 use Database\Factories\Modules\Psychopedagogic\Models\CurricularAdaptationPlanFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

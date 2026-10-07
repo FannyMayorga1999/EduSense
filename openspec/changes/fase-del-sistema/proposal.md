@@ -7,15 +7,15 @@ The system has undergone a comprehensive refactoring and feature expansion to es
 ## What Changes
 
 ### Architecture & Structure
-- Backend restructuring: Migrated from a flat structure to modular architecture under app/Modules/ (Academic, Administration, Psychopedagogic, Students, System)
-- Frontend restructuring: Reorganized from component-based to feature-based architecture under src/features/ with dedicated pages, components, hooks, and services
-- Shared UI components: Established reusable UI component library under src/components/ui/
+- Backend restructuring: Migrated from a flat structure to modular architecture under app/Modules/ (Academic with Students submodule, Administration, Psychopedagogic, System)
+- Frontend restructuring: Reorganized from component-based to feature-based architecture under src/features/ with dedicated pages, components, hooks, and services (students as a sub-feature of academic)
+- Shared UI components: Established reusable UI component library under src/shared/components/ui/
 - Layout & routing: Implemented collapsible sidebar navigation with role-based access
 
 ### Student Module
 - Student management: Full CRUD API and UI for student records with profile fields
 - Student forms: Enhanced form with document types, validation, and modal-based editing
-- Student detail panel: Side panel view for quick student inspection
+- Student detail panel: Detail drawer for quick student inspection
 - Import functionality: Student import modal for bulk operations
 - Enhanced filtering: Multi-select filters and active filters UI
 - i18n support: Internationalization for student module (en/es)
@@ -68,7 +68,7 @@ The system has undergone a comprehensive refactoring and feature expansion to es
 
 ### Frontend
 - Complete feature-based architecture migration
-- New UI components (SidePanel, MultiSelect, ActiveFilters, Tooltip, Field, Input, Modal)
+- New UI components (Button, Card, Field, Input, Modal, MultiSelect, PaginatedTable, Tooltip, Alert, StatusBadge, ActiveFilters)
 - Collapsible Sidebar with tooltips in collapsed state
 - i18n support (English/Spanish)
 - Enhanced styling with CSS modules for students

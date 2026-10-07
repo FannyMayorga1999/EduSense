@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Bell, CalendarCheck2, FileText, RefreshCw, Users } from 'lucide-react'
 import KpiCard from '@/features/psychopedagogic/components/KpiCard'
 import { useDashboard } from '@/features/psychopedagogic/hooks/useDashboard'
-import Button from '@/components/ui/Button'
+import Button from '@/shared/components/ui/Button'
 import type { EvaluationArea } from '@/types'
 
 /**
