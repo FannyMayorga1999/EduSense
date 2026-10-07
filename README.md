@@ -9,7 +9,7 @@ notificables** cuando un estudiante supera el umbral de riesgo.
 
 > **Autor:** Fanny Mayorga
 >
-> **Fecha:** 23-09-2026
+> **Fecha:** 07-10-2026
 
 ## Arquitectura
 
@@ -20,27 +20,36 @@ notificables** cuando un estudiante supera el umbral de riesgo.
 | Autenticación | Laravel Sanctum (cookies de sesión) + RBAC | `backend/` |
 | Tiempo real | Laravel Reverb (WebSockets) | `backend/` (puerto 8080) |
 | Frontend | React 19 + TypeScript + Vite + Tailwind CSS | `frontend/` (puerto 5173) |
-| Realtime cliente | Laravel Echo + pusher-js | `frontend/` |
+| Realtime cliente | Laravel Echo + pusher-js | `frontend/src/services/realtime.ts` |
 | Base de datos | PostgreSQL 17 (volumen persistente) | servicio `db` (puerto 5432) |
 | Hojas de cálculo | PhpSpreadsheet (exportación XLSX) | `backend/` |
 
 ### Arquitectura de software
 
 EduSense se organiza en **módulos** bajo `backend/app/Modules`, cada uno con sus modelos
-Eloquent, controladores de API, FormRequests, servicios y rutas:
+Eloquent, controladores de API, FormRequests, servicios y rutas. Los submódulos viven en
+`app/Modules/<Modulo>/Submodules/<Submodulo>`:
 
 | Módulo | Responsabilidad |
 | --- | --- |
-| `System` | Autenticación (login/logout/me), usuarios, roles y permisos |
-| `Students` | Registro maestro de estudiantes: CRUD, importación CSV y exportación CSV/XLSX |
+| `System` | Autenticación (login/logout/me), usuarios, roles y permisos, y **menú dinámico** |
 | `Academic` | Cursos, períodos, materias, matrículas, asistencia y notas (con importación) |
-| `Psychopedagogic` | Encuestas, evaluaciones, fichas, diagnósticos, PACs y cronograma |
+| `Psychopedagogic` | Encuestas, evaluaciones, fichas, diagnósticos, categorías NEE, PACs y cronograma |
 | `Administration` | Módulos, configuración global y auditoría |
 
-Las rutas viven en `app/Modules/<Modulo>/Routes/api.php` y respetan el prefijo `api/v1`.
-Toda la API protegida exige sesión de Sanctum (`auth:sanctum`) y **permisos** por endpoint
-(`permission:<slug>`). El `RolePermissionSeeder` define 4 grupos de permisos y los roles
-iniciales.
+El **registro maestro de estudiantes** es un submódulo de `Academic`:
+`app/Modules/Academic/Submodules/Students` (CRUD, importación/exportación, operaciones
+masivas por paralelo y estado).
+
+Las rutas se **descubren automáticamente**: `backend/routes/api.php` monta bajo el prefijo
+`/api/v1` los archivos `Routes/api.php` de cada módulo y submódulo, así que añadir un módulo
+nuevo no requiere tocar el entrypoint. Toda la API protegida exige sesión de Sanctum
+(`auth:sanctum`) y **permisos** por endpoint (`permission:<slug>`). El `RolePermissionSeeder`
+define 4 grupos de permisos y los roles iniciales.
+
+La **navegación** es dinámica: los ítems del menú viven en la tabla `sys_menu_items`, se
+exponen en `GET /api/v1/menus` y el frontend los renderiza en una **Sidebar colapsable**
+que muestra tooltips al contraer.
 
 Flujo principal:
 
@@ -48,8 +57,8 @@ Flujo principal:
 flowchart LR
     A[Vite / frontend] -- POST /api/v1/psychopedagogic/evaluations --> B[Laravel API :8000]
     B --> C[(PostgreSQL 17)]
-    B -- Evento EvaluacionProcesada --> D[Reverb :8080]
-    D -- WebSocket canal "evaluaciones" --> A
+    B -- Evento EvaluationProcessed --> D[Reverb :8080]
+    D -- canal "evaluaciones" / evento "evaluacion.procesada" --> A
 ```
 
 El frontend usa un proxy de desarrollo que reenvía `/api` a `http://backend:8000`
@@ -126,36 +135,37 @@ EduSense/
 ├── compose.yaml             # Orquestación Podman/Compose: db, backend, reverb, frontend
 ├── docs/
 │   └── API.md               # Documentación detallada de la API y WebSockets
-├── promps.txt               # Especificación original del proyecto
+├── openspec/                # Especificaciones y cambios gestionados con OpenSpec
 ├── backend/                 # API Laravel 13 + Reverb + Sanctum
-│   ├── Dockerfile           # Imagen PHP 8.4 (pdo_pgsql, gd, zip, pcntl, etc.)
+│   ├── Dockerfile           # Imagen PHP 8.4-cli (pdo_pgsql, gd, zip, pcntl, etc.)
 │   ├── .env.docker          # Entorno de contenedor aplicado por el entrypoint
 │   ├── docker/entrypoint.sh  # Espera BD, migra, siembra y arranca
-│   ├── app/Modules/
-│   │   ├── System/          # Auth (login/logout/me), usuarios, roles, permisos
-│   │   ├── Students/        # CRUD, importación y exportación de estudiantes
-│   │   │   ├── Models/Student.php
-│   │   │   ├── Services/StudentImportService.php
-│   │   │   └── Routes/api.php
+│   ├── app/Modules/         # Módulos descubiertos y montados bajo /api/v1
+│   │   ├── System/          # Auth (login/logout/me), usuarios, roles, permisos, menús
 │   │   ├── Academic/        # Cursos, términos, materias, matrículas, asistencia, notas
-│   │   ├── Psychopedagogic/ # Encuestas, evaluaciones, fichas, diagnósticos, PACs
+│   │   │   └── Submodules/
+│   │   │       └── Students/# Registro maestro: CRUD, importación, exportación
+│   │   ├── Psychopedagogic/ # Encuestas, evaluaciones, fichas, diagnósticos, NEE, PACs
 │   │   │   └── Services/PsychopedagogicEvaluationService.php
 │   │   └── Administration/  # Módulos, settings y auditoría (AuditService)
-│   └── tests/Feature/       # 7 archivos, 33 pruebas (RBAC, auth, evaluaciones, estudiantes)
-└── frontend/               # SPA React + TypeScript + Vite
+│   └── tests/Feature/       # 10 archivos, 60 pruebas (RBAC, auth, evaluaciones, estudiantes…)
+└── frontend/               # SPA React 19 + TypeScript + Vite
     ├── Dockerfile          # Imagen Node (dev server con HMR)
     ├── src/
-    │   ├── api.ts          # Cliente HTTP (axios) + funciones por recurso
-    │   ├── echo.ts         # Cliente Laravel Echo / Reverb
-    │   ├── i18n.ts         # Soporte es/en
+    │   ├── features/       # Módulos por dominio (components, hooks, services, index.ts)
+    │   │   ├── academic/   # Términos, cursos… + sub-feature students/
+    │   │   ├── psychopedagogic/  # Dashboard, KpiCard, useDashboard (WebSocket)
+    │   │   └── system/     # auth, menus, roles, settings, users
+    │   ├── shared/         # Código reutilizable
+    │   │   ├── components/ui/   # Kit UI: Button, Input, Select, Modal, MultiSelect…
+    │   │   ├── hooks/           # usePagination, useTheme
+    │   │   └── utils/           # format, scrollLock
+    │   ├── services/       # http.ts (axios), realtime.ts (Laravel Echo)
+    │   ├── layout/         # Home (layout autenticado), Sidebar colapsable, UserMenu
+    │   ├── pages/          # Dashboard, Login, Terms, Users, Roles, Ajustes, Profile…
     │   ├── locales/        # es.json y en.json
-    │   ├── types.ts        # Tipos compartidos
-    │   ├── auth/           # AuthContext (sesión) y RequireAuth (rutas protegidas)
-    │   ├── pages/Login.tsx
-    │   └── components/
-    │       ├── Dashboard.tsx, Sidebar.tsx, Home.tsx, KpiCard.tsx, Placeholder.tsx
-    │       ├── Students/   # StudentsPage + modales (form, importación, confirmación)
-    │       └── ui/         # Kit UI: Button, Input, Select, Field, Modal, Pagination, Badge...
+    │   ├── styles/         # global.css + modules/ (estilos por módulo)
+    │   ├── i18n.ts / types.ts / App.tsx / main.tsx
     └── vite.config.ts      # Proxy /api → http://backend:8000
 ```
 
@@ -179,8 +189,10 @@ EduSense/
 - El documento debe tener **7 a 10 dígitos**; opcionalmente la importación matricula a los
   estudiantes en un curso y período.
 - **Exportación**: descarga CSV o XLSX respetando los filtros activos
-  (búsqueda, estado y grado).
+  (búsqueda, estado, curso/grado y paralelo).
 - La desactivación es **baja lógica** (`is_active = false`); el estudiante puede reactivarse.
+- Operaciones **masivas** por selección: asignar paralelo (`bulk-parallel`) y cambiar
+  estado (`bulk-status`).
 
 ## API y WebSocket
 
@@ -189,10 +201,10 @@ Todos los endpoints viven bajo `/api/v1`, exigen sesión de Sanctum y validan pe
 
 | Grupo | Rutas principales |
 | --- | --- |
-| System | `POST /login`, `POST /logout`, `GET /me`, CRUD de `users`, `roles`, `permissions` |
-| Students | `GET/POST /students`, `GET/PUT/DELETE /students/{student}`, `GET /students/export`, `POST /students/import` |
+| System | `POST /login`, `POST /logout`, `GET /me`, `GET /menus`, CRUD de `users`, `roles`, `permissions` |
+| Students | `GET/POST /students`, `GET/PUT/DELETE /students/{student}`, `GET /students/export`, `POST /students/import`, `POST /students/bulk-parallel`, `POST /students/bulk-status` |
 | Academic | `GET/POST/PUT/DELETE /academic/{courses|terms|subjects|enrollments|attendance|grades}`, `POST /academic/grades/import` |
-| Psychopedagogic | `GET /dashboard/summary`, `POST /psychopedagogic/evaluations`, CRUD de `surveys`, `activities`, `schedules`, `records`, `nee-categories`, `diagnostics`, `plans`, `observation-logs` |
+| Psychopedagogic | `GET /dashboard/summary`, `GET/POST/PUT/DELETE /psychopedagogic/{surveys|activities|schedules|records|nee-categories|diagnostics|plans|observation-logs}`, `POST /psychopedagogic/evaluations`, `GET /psychopedagogic/evaluations/{student}/{summary|history}` |
 | Administration | `GET /modules`, `GET /audit-logs`, `GET/PUT /settings` |
 
 - Canal público: `evaluaciones`
@@ -205,7 +217,7 @@ requieren PostgreSQL y corren igual en el host y dentro del contenedor.
 
 ```bash
 cd backend
-php artisan test --compact      # Suite de pruebas (33 pruebas / 82 aserciones)
+php artisan test --compact      # Suite de pruebas (60 pruebas / 177 aserciones)
 
 # Dentro del contenedor:
 podman exec edusense-backend php artisan test --compact
@@ -215,6 +227,11 @@ npm run build                   # tsc + build de producción
 npm run lint                    # oxlint
 ```
 
+> **Estado (07-10-2026):** 57 pruebas pasan; 3 fallan en el módulo de estudiantes
+> (filtrado por grado en `StudentModuleTest` y `StudentImportExportTest`, y exportación
+> XLSX). El resto de grupos (RBAC, auth, términos, menú, paginación, psicopedagogía)
+> pasa completo.
+
 ---
 
-<p align="center">EduSense · Fanny Mayorga · 23-09-2026</p>
+<p align="center">EduSense · Fanny Mayorga · 07-10-2026</p>
